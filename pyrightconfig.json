@@ -1,0 +1,6 @@
+{
+  "include": ["**/*.py"],
+  "ignore": [],
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false
+}

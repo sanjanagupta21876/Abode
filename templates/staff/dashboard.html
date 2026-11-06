@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Staff Dashboard — SmartHostel{% endblock %}
+{% block content %}
+<style>
+.staff-stat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: 0 4px 14px rgba(15,39,71,0.06);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+}
+.staff-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15,39,71,0.1);
+}
+.staff-stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+.staff-stat-body {
+    flex: 1;
+}
+.staff-stat-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-3);
+    margin-bottom: 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.staff-stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    font-family: 'Outfit', sans-serif;
+    line-height: 1;
+}
+.icon-blue { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+.icon-orange { background: rgba(249, 115, 22, 0.1); color: #F97316; }
+.icon-green { background: rgba(34, 197, 94, 0.1); color: #22C55E; }
+.icon-red { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+
+.priority-urgent {
+    background: rgba(239, 68, 68, 0.05) !important;
+    border-left: 4px solid #EF4444 !important;
+}
+.priority-high {
+    border-left: 4px solid #F97316 !important;
+}
+.priority-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.p-urgent { background: #EF4444; color: white; }
+.p-high { background: rgba(249, 115, 22, 0.15); color: #c2410c; border: 1px solid rgba(249, 115, 22, 0.3); }
+.p-normal { background: rgba(148, 163, 184, 0.15); color: #475569; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+.filter-toolbar {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+    border: 1.5px dashed var(--border);
+}
+</style>
+
+<div class="page-header fade-in">
+    <div class="page-header-left">
+        <div class="breadcrumb"><i class="fas fa-tools"></i> Staff Portal</div>
+        <h1>{{ dept_label }} Dashboard {{ dept_emoji }}</h1>
+        <p>Welcome, {{ session.full_name }}. Here are the tasks assigned to your department.</p>
+    </div>
+</div>
+
+<div class="stats-grid fade-in" style="margin-bottom: 2rem;">
+    <div class="staff-stat-card">
+        <div class="staff-stat-icon icon-orange"><i class="fas fa-clipboard-list"></i></div>
+        <div class="staff-stat-body">
+            <div class="staff-stat-label">Open Tasks</div>
+            <div class="staff-stat-value">{{ stats.open_count or 0 }}</div>
+        </div>
+    </div>
+    <div class="staff-stat-card">
+        <div class="staff-stat-icon icon-blue"><i class="fas fa-spinner"></i></div>
+        <div class="staff-stat-body">
+            <div class="staff-stat-label">In Progress</div>
+            <div class="staff-stat-value">{{ stats.in_progress or 0 }}</div>
+        </div>
+    </div>
+    <div class="staff-stat-card">
+        <div class="staff-stat-icon icon-green"><i class="fas fa-check-double"></i></div>
+        <div class="staff-stat-body">
+            <div class="staff-stat-label">Resolved</div>
+            <div class="staff-stat-value">{{ stats.resolved or 0 }}</div>
+        </div>
+    </div>
+    <div class="staff-stat-card">
+        <div class="staff-stat-icon icon-red"><i class="fas fa-clock"></i></div>
+        <div class="staff-stat-body">
+            <div class="staff-stat-label">Overdue (>48h)</div>
+            <div class="staff-stat-value">{{ stats.overdue or 0 }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="filter-toolbar fade-in">
+    <i class="fas fa-filter" style="color:var(--primary);"></i> <strong style="color:var(--text-dark); font-size: 0.95rem;">Filter by:</strong>
+    <form method="GET" action="{{ url_for('staff.dashboard') }}" id="filterForm" style="display:flex; gap:1rem; flex:1;">
+        <select name="status" class="select-sm" onchange="document.getElementById('filterForm').submit()" style="border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; color: var(--text-2); outline: none; flex: 1; min-width: 140px;">
+            <option value="open" {{ 'selected' if status_filter == 'open' }}>Open & In Progress</option>
+            <option value="pending" {{ 'selected' if status_filter == 'pending' }}>Pending / Unassigned</option>
+            <option value="in_progress" {{ 'selected' if status_filter == 'in_progress' }}>In Progress</option>
+            <option value="resolved" {{ 'selected' if status_filter == 'resolved' }}>Resolved (History)</option>
+        </select>
+        <select name="priority" class="select-sm" onchange="document.getElementById('filterForm').submit()" style="border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; color: var(--text-2); outline: none; flex: 1; min-width: 140px;">
+            <option value="all" {{ 'selected' if priority_filter == 'all' }}>All Priorities</option>
+            <option value="urgent" {{ 'selected' if priority_filter == 'urgent' }}>Urgent</option>
+            <option value="high" {{ 'selected' if priority_filter == 'high' }}>High</option>
+            <option value="normal" {{ 'selected' if priority_filter == 'normal' }}>Normal</option>
+        </select>
+    </form>
+</div>
+
+{% if complaints %}
+<div class="table-wrapper fade-in">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Priority</th>
+                <th>Location</th>
+                <th>Task</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in complaints %}
+            <tr class="{% if c.priority == 'urgent' %}priority-urgent{% elif c.priority == 'high' %}priority-high{% endif %}">
+                <td style="font-family:monospace; font-weight:600; color:var(--text-3);">#{{ c.id }}</td>
+                <td>
+                    {% if c.priority == 'urgent' %}
+                        <span class="priority-badge p-urgent"><i class="fas fa-triangle-exclamation"></i> URGENT</span>
+                    {% elif c.priority == 'high' %}
+                        <span class="priority-badge p-high">HIGH</span>
+                    {% else %}
+                        <span class="priority-badge p-normal">NORMAL</span>
+                    {% endif %}
+                </td>
+                <td style="font-weight:600; color:var(--text-dark);">
+                    {% if c.location %}
+                        {{ c.location }}
+                    {% elif c.room_number %}
+                        Room {{ c.room_number }}
+                    {% else %}
+                        <span class="text-muted">Not specified</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="font-weight:700; color:var(--text-dark); margin-bottom:0.2rem;">{{ c.title }}</div>
+                    <div style="font-size:0.8rem; color:var(--text-3); max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        {{ c.description }}
+                    </div>
+                </td>
+                <td>
+                    <span class="badge-status {{ 'green' if c.status == 'resolved' else 'yellow' if c.status in ['pending', 'assigned', 'in_progress', 'unresolved'] else 'red' }}">
+                        {{ c.status|replace('_', ' ')|title }}
+                    </span>
+                    {% if c.assigned_staff_id == session.user_id and c.status != 'resolved' %}
+                        <div style="font-size:0.7rem; color:var(--abode-lavender); font-weight:700; margin-top:0.2rem;"><i class="fas fa-user-check"></i> Assigned to you</div>
+                    {% endif %}
+                </td>
+                <td style="font-size:0.85rem; color:var(--text-2);">{{ c.created_at|datefmt }}</td>
+                <td>
+                    <a href="{{ url_for('staff.view_complaint', complaint_id=c.id) }}" class="btn btn-outline btn-sm" style="color:var(--primary); border-color:var(--primary); padding:0.4rem 0.8rem; border-radius:12px; font-weight:700;">
+                        Open <i class="fas fa-arrow-right" style="margin-left:4px;"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state fade-in">
+    <div class="empty-icon"><i class="fas fa-clipboard-check" style="color:var(--text-muted)"></i></div>
+    <p>No complaints match the current filters.</p>
+    <p style="font-size:0.9rem; color:var(--text-3); margin-top:0.5rem;">Great job! Your department is all caught up.</p>
+</div>
+{% endif %}
+{% endblock %}

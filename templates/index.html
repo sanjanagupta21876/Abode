@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Welcome to Abode{% endblock %}
+{% block content %}
+
+<div class="abode-landing-page">
+    <div class="landing-house-wrapper bounce-in">
+        <svg width="280" height="280" viewBox="0 0 200 200" fill="none" class="hero-house-svg">
+            <path d="M30 90H170V180H30V90Z" fill="white"/>
+            <rect x="30" y="90" width="140" height="90" fill="none" stroke="#0F172A" stroke-width="4"/>
+            <path d="M100 20L180 90H20L100 20Z" fill="#2563EB" stroke="#0F172A" stroke-width="4"/>
+            <rect x="30" y="90" width="70" height="90" fill="#DBEAFE" stroke="#0F172A" stroke-width="4"/>
+            <rect x="100" y="90" width="70" height="90" fill="#DBEAFE" stroke="#0F172A" stroke-width="4"/>
+            <circle cx="90" cy="135" r="4" fill="#0F172A"/>
+            <circle cx="110" cy="135" r="4" fill="#0F172A"/>
+        </svg>
+    </div>
+    <h1 class="landing-welcome-text bounce-in" style="animation-delay: .15s;">Welcome to Abode</h1>
+    <p class="landing-tagline bounce-in" style="animation-delay: .25s;">Your campus residence, organised.</p>
+</div>
+
+<style>
+/* Revert landing page overrides */
+body { background: white !important; overflow: hidden; }
+.landing { padding: 0 !important; }
+.landing-nav { display: none !important; }
+
+.landing-tagline {
+    font-family: 'Outfit', sans-serif;
+}
+
+.hero-house-svg {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+}
+
+/* Base Pre-animation styles */
+.house-glow-effect {
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+}
+
+/* Animations */
+.anim-press {
+    animation: pressEffect 120ms forwards;
+}
+.anim-split .house-left {
+    animation: doorSplitLeft 600ms ease-in-out forwards;
+}
+.anim-split .house-right {
+    animation: doorSplitRight 600ms ease-in-out forwards;
+}
+.anim-open .house-left {
+    animation: doorOpenLeft 800ms cubic-bezier(0.65, 0, 0.35, 1) forwards !important;
+}
+.anim-open .house-right {
+    animation: doorOpenRight 800ms cubic-bezier(0.65, 0, 0.35, 1) forwards !important;
+}
+
+.anim-exit {
+    transform: scale(3);
+    opacity: 0;
+    transition: all 600ms ease-out;
+}
+
+@keyframes pressEffect {
+    0% { transform: scale(1); }
+    100% { transform: scale(0.96); }
+}
+
+@keyframes doorSplitLeft {
+    0% { transform: translateX(0) rotateY(0deg); }
+    100% { transform: translateX(-120px) rotateY(-35deg); }
+}
+
+@keyframes doorSplitRight {
+    0% { transform: translateX(0) rotateY(0deg); }
+    100% { transform: translateX(120px) rotateY(35deg); }
+}
+
+@keyframes doorOpenLeft {
+    0% { transform: translateX(-120px) rotateY(-35deg); }
+    100% { transform: translateX(-120px) rotateY(-85deg); }
+}
+
+@keyframes doorOpenRight {
+    0% { transform: translateX(120px) rotateY(35deg); }
+    100% { transform: translateX(120px) rotateY(85deg); }
+}
+
+</style>
+
+<script>
+window.setTimeout(() => {
+    document.querySelector('.abode-landing-page').classList.add('landing-exit');
+    window.setTimeout(() => { window.location.href = "{{ url_for('residence_story') }}"; }, 420);
+}, 1800);
+</script>
+
+{% endblock %}

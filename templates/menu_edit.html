@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Edit Menu — SmartHostel{% endblock %}
+
+{% block content %}
+<div class="dashboard-header fade-in">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+            <h1><i class="fas fa-pen-to-square" style="color:var(--primary)"></i> Edit Weekly Menu</h1>
+            <p style="color:var(--text-muted);margin-top:.25rem;">Select a day and meal, then enter food items and calories.</p>
+        </div>
+        <a href="{{ url_for('menu.view_menu') }}" class="btn-outline">
+            <i class="fas fa-eye"></i> View Menu
+        </a>
+    </div>
+</div>
+
+<style>
+.menu-layout {
+    max-width: 1200px; 
+    margin: 0 auto; 
+    display: grid; 
+    grid-template-columns: 350px 1fr; 
+    gap: 2rem; 
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .menu-layout {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+<div class="menu-layout fade-in fade-in-2">
+
+    <!-- ── Left: Edit Form ─────────────────────────────────────────── -->
+    <div class="dash-section fade-in fade-in-2" style="border: 2px dashed var(--primary); border-radius: 30px; padding: 2rem 2.5rem; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); box-shadow: 0 15px 35px rgba(236,72,153,0.15);">
+        <div class="section-header" style="border-bottom: 2px dashed var(--primary-light); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <h3 style="color: var(--primary-dark);"><i class="fas fa-utensils"></i> Update Meal</h3>
+        </div>
+
+        <form method="POST" action="{{ url_for('menu.update_menu') }}" class="menu-edit-form">
+            <div class="form-group">
+                <label for="day_id"><i class="fas fa-calendar-days" style="color: var(--abode-lavender);"></i> Day</label>
+                <select name="day_id" id="day_id" required onchange="prefillMenu()">
+                    <option value="">— Select Day —</option>
+                    {% for d in days %}
+                    <option value="{{ d.id }}">{{ d.day }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="meal_id"><i class="fas fa-bowl-food" style="color: var(--abode-mint);"></i> Meal</label>
+                <select name="meal_id" id="meal_id" required onchange="prefillMenu()">
+                    <option value="">— Select Meal —</option>
+                    {% for m in meals %}
+                    <option value="{{ m.id }}">{{ m.meal }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="items"><i class="fas fa-list-ul" style="color: var(--abode-pink);"></i> Food Items</label>
+                <textarea name="items" id="items" rows="4"
+                    placeholder="e.g. Poha, Tea, Boiled Eggs" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="calories"><i class="fas fa-fire" style="color: var(--orange-text);"></i> Calories (kcal)</label>
+                <input type="number" name="calories" id="calories" min="0" placeholder="e.g. 450">
+            </div>
+
+            <div class="form-actions" style="margin-top:.5rem;">
+                <button type="reset" class="btn-outline" onclick="clearForm()">
+                    <i class="fas fa-rotate-left"></i> Clear
+                </button>
+                <button type="submit" class="abode-btn-primary" style="background: var(--primary); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;">
+                    <i class="fas fa-floppy-disk"></i> Save Menu
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Right: Current Menu Summary ────────────────────────────── -->
+    <div class="dash-section fade-in fade-in-3" style="overflow-x:auto;">
+        <div class="section-header">
+            <h3><i class="fas fa-table"></i> Current Menu Entries</h3>
+            <a href="{{ url_for('menu.view_menu') }}" class="btn-outline btn-sm">
+                <i class="fas fa-expand"></i> Full View
+            </a>
+        </div>
+
+        {% if existing_menu %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Meal</th>
+                        <th>Items</th>
+                        <th>Kcal</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in existing_menu %}
+                    <tr>
+                        <td><strong style="color:var(--accent)">{{ row.day }}</strong></td>
+                        <td><span class="tag">{{ row.meal }}</span></td>
+                        <td style="max-width:220px; font-size:.83rem; line-height:1.5;">
+                            {{ row.items[:80] }}{% if row.items|length > 80 %}…{% endif %}
+                        </td>
+                        <td>
+                            {% if row.calories %}
+                            <span style="color:var(--orange-text);font-weight:800;font-size:0.95rem;">{{ row.calories }}</span>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td style="font-size:.78rem;color:var(--text-muted);">
+                            {{ row.updated_at|datefmt('%d %b') if row.updated_at else '—' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-msg">No menu entries yet — use the form to add meals.</p>
+        {% endif %}
+    </div>
+
+</div><!-- /dash-grid -->
+
+<style>
+.menu-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.menu-edit-form select,
+.menu-edit-form textarea,
+.menu-edit-form input[type="number"] {
+    border: 1.5px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: .7rem .9rem;
+    font-size: .9rem;
+    font-family: inherit;
+    transition: all .25s;
+    background: rgba(255,255,255,.04);
+    color: var(--text-primary);
+    width: 100%;
+}
+.menu-edit-form select:focus,
+.menu-edit-form textarea:focus,
+.menu-edit-form input[type="number"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+    background: rgba(255,255,255,.06);
+}
+.menu-edit-form select option {
+    background: var(--bg-base);
+    color: var(--text-primary);
+}
+</style>
+
+<script>
+async function prefillMenu() {
+    const dayId  = document.getElementById('day_id').value;
+    const mealId = document.getElementById('meal_id').value;
+    if (!dayId || !mealId) return;
+
+    try {
+        const res  = await fetch(`/menu/api/${dayId}/${mealId}`);
+        const data = await res.json();
+        document.getElementById('items').value    = data.items    || '';
+        document.getElementById('calories').value = data.calories || '';
+    } catch(e) {
+        console.warn('Prefill fetch failed:', e);
+    }
+}
+
+function clearForm() {
+    document.getElementById('items').value    = '';
+    document.getElementById('calories').value = '';
+}
+</script>
+
+{% endblock %}

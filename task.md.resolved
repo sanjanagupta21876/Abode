@@ -1,0 +1,50 @@
+# Smart Hostel Management System - Task Checklist
+
+## Planning
+- [/] Read full code from DeepSeek link
+- [ ] Create implementation plan
+
+## Project Setup
+- [ ] Create project folder structure
+- [ ] Create requirements.txt
+- [ ] Create config.py
+
+## Database
+- [ ] Create MySQL schema SQL file (all 9 tables)
+- [ ] Seed raw sample data into database
+- [ ] Create db.py (database connection helper)
+
+## Backend (Flask)
+- [ ] app.py (main Flask app)
+- [ ] auth routes (student login, warden login, register)
+- [ ] complaint routes (CRUD)
+- [ ] attendance routes (mark/view)
+- [ ] leave_pass routes (apply/approve/reject)
+- [ ] food_wastage routes (log/view)
+- [ ] notifications routes (send/view)
+- [ ] worker routes
+
+## Frontend (HTML/CSS/JS)
+- [ ] base.html (layout with nav)
+- [ ] index.html (landing page)
+- [ ] student_login.html
+- [ ] student_dashboard.html
+- [ ] warden_login.html
+- [ ] warden_dashboard.html
+- [ ] complaint.html
+- [ ] attendance.html
+- [ ] leave_pass.html
+- [ ] food_wastage.html
+- [ ] notifications.html
+- [ ] static/css/style.css
+- [ ] static/js/main.js
+
+## Verification
+- [ ] Test Flask server starts
+- [ ] Test student login/logout
+- [ ] Test warden login/logout
+- [ ] Test complaint submission and warden view
+- [ ] Test attendance marking
+- [ ] Test leave pass application and approval
+- [ ] Test food wastage logging
+- [ ] Test notifications

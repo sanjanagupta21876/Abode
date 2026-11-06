@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Send Notification - SmartHostel{% endblock %}
+{% block content %}
+<style>
+.cute-input {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text);
+    transition: all 0.2s;
+}
+.cute-input:focus {
+    outline: none;
+    border-color: #006EBB;
+    box-shadow: 0 0 0 3px rgba(0,110,187,0.16);
+}
+.cute-label {
+    display: block;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--text-2);
+}
+.cute-label i { margin-right: 6px; }
+.poll-creator-glass {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #F8FAFC;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+}
+</style>
+
+<div class="form-page">
+    <div class="fade-in" style="max-width:600px;margin:2rem auto;padding:2rem;background:#fff;border:1px solid #E2E8F0;border-radius:12px;box-shadow:0 4px 14px rgba(15,39,71,0.06);">
+        <h2 style="margin-bottom: 1.5rem; font-weight: 800; color: var(--text);"><i class="fas fa-bell" style="color:var(--abode-lavender);"></i> Send Notification</h2>
+        <form method="POST">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="cute-label"><i class="fas fa-bullseye" style="color: var(--abode-pink);"></i> Target</label>
+                <select name="target" class="cute-input">
+                    <option value="all">All Students (Broadcast)</option>
+                    {% for s in students %}
+                    <option value="{{ s.id }}">{{ s.full_name }} ({{ s.username }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="cute-label"><i class="fas fa-heading" style="color: var(--abode-lavender);"></i> Title *</label>
+                <input type="text" name="title" class="cute-input" required placeholder="Notification title">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="cute-label"><i class="fas fa-align-left" style="color: var(--abode-mint);"></i> Message *</label>
+                <textarea name="message" class="cute-input" rows="4" required
+                    placeholder="Write your notification message here..."></textarea>
+            </div>
+
+            <!-- Poll Feature -->
+            <div class="poll-creator-glass">
+                <div class="form-check" style="margin-bottom: 1rem; display:flex; align-items:center;">
+                    <input class="form-check-input" type="checkbox" name="is_poll" id="is_poll" onchange="togglePollFields()" style="width:20px;height:20px;accent-color:var(--abode-pink);cursor:pointer;margin:0;">
+                    <label class="form-check-label" style="font-weight:800; cursor:pointer; margin-left:10px; color:var(--text-2);" for="is_poll">
+                        <i class="fas fa-square-poll-vertical" style="color:var(--abode-pink);margin-right:4px;"></i> Create as a Poll
+                    </label>
+                </div>
+                <div id="poll-options-container" style="display: none;">
+                    <label class="cute-label" style="font-size:0.85rem;color:var(--text-muted);margin-top:1rem;">Poll Options (At least 2 required)</label>
+                    <div id="options-list">
+                        <div style="margin-bottom: 0.8rem;">
+                            <input type="text" name="poll_option" class="cute-input" placeholder="Option 1">
+                        </div>
+                        <div style="margin-bottom: 0.8rem;">
+                            <input type="text" name="poll_option" class="cute-input" placeholder="Option 2">
+                        </div>
+                    </div>
+                    <button type="button" style="background:#fff;border:2px solid var(--border);border-radius:14px;padding:8px 16px;font-weight:700;cursor:pointer;transition:0.2s;color:var(--text-2);" onmouseover="this.style.borderColor='var(--abode-lavender)';this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-2)'" onclick="addOption()">
+                        <i class="fas fa-plus" style="color:var(--abode-lavender);margin-right:4px;"></i> Add Option
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-actions" style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{{ url_for('notification.view') }}" style="padding:12px 24px;border-radius:14px;font-weight:800;color:var(--text-3);text-decoration:none;border:2px solid var(--border);background:#fff;transition:0.2s;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='#fff'">Cancel</a>
+                <button type="submit" style="padding:12px 28px;border-radius:14px;font-weight:800;color:#fff;border:none;background:var(--primary);cursor:pointer;box-shadow:0 8px 24px rgba(236,72,153,0.3);transition:0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'"><i class="fas fa-paper-plane" style="margin-right:6px;"></i> Send</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function togglePollFields() {
+    const isChecked = document.getElementById('is_poll').checked;
+    document.getElementById('poll-options-container').style.display = isChecked ? 'block' : 'none';
+}
+function addOption() {
+    const list = document.getElementById('options-list');
+    const idx = list.children.length + 1;
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `<input type="text" name="poll_option" class="cute-input" placeholder="Option ${idx}">`;
+    list.appendChild(div);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Outpass - Abode{% endblock %}
+{% block content %}
+
+<div class="page-header" style="margin-bottom:1.5rem;">
+    <h1 style="font-size:1.7rem;font-weight:800;color:#0f172a;letter-spacing:-0.025em;">Log Outpass / Leave</h1>
+    <p style="color:#64748b;font-size:0.9rem;">Record your destination and return time. No approval required.</p>
+</div>
+
+<div class="card" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:1.75rem;max-width:720px;box-shadow:0 8px 24px rgba(15,23,42,0.04);">
+    <form method="POST" action="{{ url_for('outpass.create_request') }}">
+        <div class="form-row" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+            <div class="form-group" style="flex:1;min-width:200px;">
+                <label style="font-size:0.8rem;font-weight:700;color:#334155;display:block;margin-bottom:0.35rem;">Request Type</label>
+                <select name="otype" required style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.9rem;background:#fff;color:#0f172a;">
+                    <option value="outpass">Outpass (same day)</option>
+                    <option value="leave">Leave Pass (multiple days)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+            <div class="form-group" style="flex:1;min-width:240px;">
+                <label style="font-size:0.8rem;font-weight:700;color:#334155;display:block;margin-bottom:0.35rem;">Destination</label>
+                <input type="text" name="destination" placeholder="e.g. Potheri Market" required style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.9rem;">
+            </div>
+            <div class="form-group" style="flex:1;min-width:240px;">
+                <label style="font-size:0.8rem;font-weight:700;color:#334155;display:block;margin-bottom:0.35rem;">Purpose</label>
+                <input type="text" name="purpose" placeholder="e.g. shopping, home visit" required style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.9rem;">
+            </div>
+        </div>
+
+        <div class="form-row" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+            <div class="form-group" style="flex:1;min-width:240px;">
+                <label style="font-size:0.8rem;font-weight:700;color:#334155;display:block;margin-bottom:0.35rem;">Departure Date &amp; Time</label>
+                <input type="datetime-local" name="departure_at" required style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.9rem;">
+            </div>
+            <div class="form-group" style="flex:1;min-width:240px;">
+                <label style="font-size:0.8rem;font-weight:700;color:#334155;display:block;margin-bottom:0.35rem;">Expected Return Date &amp; Time</label>
+                <input type="datetime-local" name="return_at" required style="width:100%;padding:0.7rem 0.9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.9rem;">
+            </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:0.75rem;">
+            <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline" style="padding:0.65rem 1.25rem;border-radius:10px;font-weight:700;text-decoration:none;border:1.5px solid #e2e8f0;color:#475569;background:#fff;">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="padding:0.65rem 1.5rem;border-radius:10px;font-weight:700;background:#2563eb;color:#fff;border:none;cursor:pointer;">Log Outpass</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+{% block title %}Login — Abode{% endblock %}
+{% block content %}
+
+<div class="login-split-wrap">
+
+  <!-- ═══ LEFT PANEL: Hostel Showcase ═══ -->
+  <div class="login-panel-left" id="loginBgPanel">
+    <div class="login-left-overlay">
+
+      <div class="login-left-content">
+        <h2 class="login-hero-title">Your Home<br>Away From Home</h2>
+        <div class="login-feature-pills">
+          <div class="login-pill"><i class="fas fa-shield-halved"></i> Safe & Secure</div>
+          <div class="login-pill"><i class="fas fa-wifi"></i> High-Speed WiFi</div>
+          <div class="login-pill"><i class="fas fa-utensils"></i> Premium Dining</div>
+          <div class="login-pill"><i class="fas fa-headset"></i> 24/7 Support</div>
+        </div>
+      </div>
+
+      <div class="login-img-dots" id="imgDots">
+        <span class="img-dot active" onclick="setLoginBg(0)"></span>
+        <span class="img-dot" onclick="setLoginBg(1)"></span>
+        <span class="img-dot" onclick="setLoginBg(2)"></span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT PANEL: Login Form ═══ -->
+  <div class="login-panel-right">
+    <div class="login-form-wrap fade-in">
+
+      
+
+      <h1 class="login-form-title" style="display: flex; align-items: center; gap: 0.3rem;">Welcome to <span style="display: inline-flex; align-items: center;"><img src="{{ url_for('static', filename='logo.png') }}" alt="A" style="height: 1.1em; object-fit: contain; margin-right: 1px;">Abode</span></h1>
+      <p class="login-form-sub">Sign in to your hostel portal to continue</p>
+
+      <form method="POST" class="login-form">
+
+        <!-- Role Toggle -->
+        <div class="role-toggle-group">
+          <label class="role-label">
+            <input type="radio" name="role" value="student" {% if not role or role == 'student' %}checked{% endif %}>
+            <span class="role-chip"><i class="fas fa-user-graduate"></i> Student</span>
+          </label>
+          <label class="role-label">
+            <input type="radio" name="role" value="warden" {% if role == 'warden' %}checked{% endif %}>
+            <span class="role-chip"><i class="fas fa-house-user"></i> Warden</span>
+          </label>
+          <label class="role-label">
+            <input type="radio" name="role" value="service_staff" {% if role == 'service_staff' %}checked{% endif %}>
+            <span class="role-chip"><i class="fas fa-tools"></i> Staff</span>
+          </label>
+        </div>
+
+        <!-- Username -->
+        <div class="lf-input-group">
+          <label for="lf-username">Username</label>
+          <div class="lf-input-wrap">
+            <i class="fas fa-user lf-input-icon"></i>
+            <input type="text" id="lf-username" name="username" required
+                   placeholder="Enter your username" autofocus autocomplete="username">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="lf-input-group">
+          <label for="passwordInput">Password</label>
+          <div class="lf-input-wrap">
+            <i class="fas fa-lock lf-input-icon"></i>
+            <input type="password" name="password" id="passwordInput" placeholder="••••••••" required>
+            <button type="button" class="lf-eye-btn" onclick="togglePwd()" id="eyeBtn" aria-label="Toggle password visibility">
+              <i class="fas fa-eye" id="eyeIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Forgot -->
+        <div class="lf-forgot">
+          <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="lf-submit-btn" id="signInBtn">
+          <i class="fas fa-arrow-right-to-bracket"></i> Sign In
+        </button>
+
+      </form>
+
+      <div class="lf-register" id="registerRow">
+        New student? <a href="{{ url_for('auth.register') }}" id="registerLink">Create an account →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── Override landing wrapper ── */
+.landing {
+  background: #fff !important;
+  padding: 0 !important;
+  display: block !important;
+  min-height: 100vh;
+}
+.landing-nav { display: none !important; }
+
+/* ── Split wrapper ── */
+.login-split-wrap {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ══════════════════════════════
+   LEFT PANEL
+══════════════════════════════ */
+.login-panel-left {
+  flex: 0 0 58%;
+  position: relative;
+  overflow: hidden;
+  background-color: #0F172A;
+  background-image: url("{{ url_for('static', filename='hostel/entrance.jpg.png') }}");
+  background-size: cover;
+  background-position: center;
+  transition: background-image 1s ease-in-out;
+}
+
+.login-left-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(10, 20, 50, 0.88) 0%,
+    rgba(0, 60, 120, 0.72) 60%,
+    rgba(0, 110, 187, 0.55) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2.75rem 3rem;
+}
+
+.login-left-top {}
+
+.login-left-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.login-hero-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)) brightness(1.1);
+}
+
+.login-hero-brand {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.35);
+}
+
+.login-left-content {
+  padding-bottom: 1rem;
+}
+
+.login-hero-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 5rem;
+  padding-top:20vh;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.1rem;
+  text-shadow: 0 3px 20px rgba(0,0,0,0.45);
+}
+
+.login-hero-sub {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.7;
+  max-width: 400px;
+  margin-bottom: 2rem;
+}
+
+.login-feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.login-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255,255,255,0.13);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.login-pill:hover {
+  background: rgba(255,255,255,0.24);
+  transform: translateY(-1px);
+}
+
+.login-pill i { font-size: 0.8rem; opacity: 0.9; }
+
+/* Image dots */
+.login-img-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.img-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(.4,0,.2,1);
+  flex-shrink: 0;
+}
+
+.img-dot.active {
+  background: #ffffff;
+  width: 26px;
+  border-radius: 4px;
+}
+
+/* ══════════════════════════════
+   RIGHT PANEL
+══════════════════════════════ */
+.login-panel-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative blobs */
+.login-panel-right::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(0,110,187,0.07) 0%, transparent 68%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.login-panel-right::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(0,110,187,0.05) 0%, transparent 68%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.login-form-wrap {
+  width: 100%;
+  max-width: 390px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Brand row */
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.login-brand-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.login-brand-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.025em;
+}
+
+/* Headings */
+.login-form-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.3rem;
+  line-height: 1.15;
+}
+
+.login-form-sub {
+  font-size: 0.875rem;
+  color: #64748B;
+  margin-bottom: 1.75rem;
+}
+
+/* Form layout */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* Role toggle */
+.role-toggle-group {
+  display: flex;
+  gap: 6px;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 11px;
+}
+
+.role-label {
+  flex: 1;
+  cursor: pointer;
+  position: relative;
+}
+
+.role-label input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.role-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.58rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #64748B;
+  background: transparent;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.role-label input:checked ~ .role-chip {
+  background: #ffffff;
+  color: #006EBB;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Input groups */
+.lf-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lf-input-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.lf-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.lf-input-icon {
+  position: absolute;
+  left: 0.9rem;
+  color: #94A3B8;
+  font-size: 0.82rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.lf-input-wrap input {
+  width: 100%;
+  padding: 0.75rem 0.9rem 0.75rem 2.5rem;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: #0F172A;
+  background: #FAFBFC;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.lf-input-wrap input:focus {
+  border-color: #006EBB;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0,110,187,0.12);
+}
+
+.lf-input-wrap input::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.lf-eye-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94A3B8;
+  padding: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  border-radius: 4px;
+}
+
+.lf-eye-btn:hover { color: #006EBB; }
+
+/* Forgot */
+.lf-forgot {
+  text-align: right;
+  margin-top: -0.25rem;
+}
+
+.lf-forgot a {
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: #006EBB;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.lf-forgot a:hover {
+  color: #004f88;
+  text-decoration: underline;
+}
+
+/* Submit button */
+.lf-submit-btn {
+  width: 100%;
+  padding: 0.82rem;
+  background: linear-gradient(135deg, #006EBB 0%, #005099 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  transition: all 0.22s;
+  box-shadow: 0 4px 16px rgba(0,110,187,0.28);
+  margin-top: 0.25rem;
+  letter-spacing: 0.01em;
+}
+
+.lf-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,110,187,0.38);
+  background: linear-gradient(135deg, #0079cc 0%, #0060b0 100%);
+}
+
+.lf-submit-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0,110,187,0.25);
+}
+
+/* Register */
+.lf-register {
+  text-align: center;
+  margin-top: 1.4rem;
+  font-size: 0.85rem;
+  color: #64748B;
+}
+
+.lf-register a {
+  color: #006EBB;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.lf-register a:hover {
+  color: #004f88;
+  text-decoration: underline;
+}
+
+/* ══════════════════════════════
+   RESPONSIVE
+══════════════════════════════ */
+@media (max-width: 900px) {
+  .login-panel-left { flex: 0 0 50%;}
+  .login-hero-title { font-size:3rem; padding-top:0%; }
+}
+
+@media (max-width: 680px) {
+  .login-split-wrap { flex-direction: column; }
+  .login-panel-left {
+    flex: 0 0 260px;
+    min-height: 260px;
+  }
+  .login-hero-title { font-size: 1.7rem; }
+  .login-left-overlay { padding: 1.75rem 1.5rem; }
+  .login-panel-right { padding: 2rem 1.25rem;  }
+  .login-hero-sub { font-size: 0.88rem; }
+}
+</style>
+
+<script>
+const loginBgs = [
+  "{{ url_for('static', filename='hostel/entrance.jpg.png') }}",
+  "{{ url_for('static', filename='hostel/interior.jpg.png') }}",
+  "{{ url_for('static', filename='hostel/dining-hall.jpg.png') }}"
+];
+let currentBg = 0;
+
+function setLoginBg(idx) {
+  currentBg = idx;
+  const panel = document.getElementById('loginBgPanel');
+
+  // Fade out, swap image, fade in
+  panel.style.opacity = '0.6';
+  setTimeout(() => {
+    panel.style.backgroundImage = `url('${loginBgs[idx]}')`;
+    panel.style.opacity = '1';
+  }, 300);
+
+  document.querySelectorAll('.img-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+  });
+}
+
+// Auto-rotate every 4.5s
+setInterval(() => {
+  setLoginBg((currentBg + 1) % loginBgs.length);
+}, 4500);
+
+// Add panel transition
+document.getElementById('loginBgPanel').style.transition = 'opacity 0.3s ease, background-image 0.1s';
+
+// Password toggle
+function togglePwd() {
+  const inp = document.getElementById('passwordInput');
+  const icon = document.getElementById('eyeIcon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+}
+
+// Dynamic register link based on selected role
+const registerRow  = document.getElementById('registerRow');
+const registerLink = document.getElementById('registerLink');
+
+const registerMeta = {
+  student: { show: true,  text: 'New student?', label: 'Create an account →', href: "{{ url_for('auth.register') }}" },
+  warden:  { show: true,  text: 'New warden?',  label: 'Create an account →', href: "{{ url_for('auth.register_warden') }}" },
+  service_staff: { show: false },
+};
+
+function updateRegisterLink() {
+  const role = document.querySelector('input[name="role"]:checked')?.value || 'student';
+  const meta = registerMeta[role] || registerMeta['student'];
+  if (!meta.show) {
+    registerRow.style.display = 'none';
+    return;
+  }
+  registerRow.style.display = '';
+  registerRow.childNodes[0].textContent = meta.text + ' ';
+  registerLink.textContent = meta.label;
+  registerLink.href = meta.href;
+}
+
+// Run on load and on every role change
+updateRegisterLink();
+document.querySelectorAll('input[name="role"]').forEach(r =>
+  r.addEventListener('change', updateRegisterLink)
+);
+</script>
+
+{% endblock %}

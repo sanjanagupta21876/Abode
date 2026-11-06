@@ -1,0 +1,713 @@
+{% extends "base.html" %}
+{% block title %}Mark Attendance — SmartHostel{% endblock %}
+{% block content %}
+
+{% if role == 'warden' %}
+<!-- ============================================================
+     WARDEN: PREMIUM MARK ATTENDANCE UI
+     ============================================================ -->
+
+<style>
+/* ── Sticky header bar ─────────────────────────────────────── */
+.att-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(248,250,252,.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  margin: -1.75rem -2rem 1.75rem;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.att-header-left h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  margin: 0;
+}
+
+.att-header-left .att-date {
+  font-size: .8rem;
+  color: var(--text-2);
+  margin-top: .15rem;
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.att-header-right {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Summary bar ───────────────────────────────────────────── */
+.att-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.att-summary-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.att-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.att-summary-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.att-summary-icon.total  { background: var(--primary-light); color: var(--primary); }
+.att-summary-icon.present{ background: var(--green-soft);    color: var(--green-text); }
+.att-summary-icon.absent { background: var(--red-soft);      color: var(--red-text); }
+
+.att-summary-body .label { font-size: .72rem; color: var(--text-2); font-weight: 500; }
+.att-summary-body .value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+/* ── Search & filter toolbar ────────────────────────────────── */
+.att-toolbar {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.att-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.att-search-wrap i {
+  position: absolute;
+  left: .85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  font-size: .83rem;
+  pointer-events: none;
+}
+
+.att-search-wrap input {
+  width: 100%;
+  height: 40px;
+  padding: 0 .85rem 0 2.4rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: .84rem;
+  font-family: inherit;
+  color: var(--text);
+  background: #fff;
+  transition: all .18s;
+  outline: none;
+}
+
+.att-search-wrap input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.att-room-filter {
+  height: 40px;
+  padding: 0 2rem 0 .85rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: .84rem;
+  font-family: inherit;
+  color: var(--text);
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E") no-repeat right .6rem center / 1rem;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .18s;
+}
+
+.att-room-filter:focus { border-color: var(--primary); }
+
+/* ── Student card list ─────────────────────────────────────── */
+.att-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+}
+
+.att-student-card {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: .9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-xs);
+  transition: all .22s cubic-bezier(.4,0,.2,1);
+  position: relative;
+  overflow: hidden;
+}
+
+.att-student-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--border);
+  border-radius: 4px 0 0 4px;
+  transition: background .2s;
+}
+
+.att-student-card.is-present::before { background: var(--green); }
+.att-student-card.is-absent::before  { background: var(--red); }
+
+.att-student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(99,102,241,.2);
+}
+
+.att-student-card.is-present:hover { border-color: rgba(34,197,94,.25); box-shadow: 0 6px 20px rgba(34,197,94,.1); }
+.att-student-card.is-absent:hover  { border-color: rgba(239,68,68,.25); box-shadow: 0 6px 20px rgba(239,68,68,.1); }
+
+/* Avatar */
+.att-avatar {
+  width: 38px; height: 38px;
+  border-radius: var(--r-full);
+  background: linear-gradient(135deg, var(--primary), #60A5FA);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: .9rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+
+.att-student-card:hover .att-avatar { transform: scale(1.08); }
+
+/* Student info */
+.att-student-info { flex: 1; min-width: 0; }
+
+.att-student-name {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.att-student-meta {
+  font-size: .73rem;
+  color: var(--text-3);
+  margin-top: .1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.att-student-meta span {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+/* Toggle buttons */
+.att-toggle-group {
+  display: flex;
+  gap: .4rem;
+  flex-shrink: 0;
+}
+
+.att-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .42rem .9rem;
+  border-radius: var(--r-sm);
+  font-size: .78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text-2);
+  transition: all .18s cubic-bezier(.4,0,.2,1);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.att-toggle-btn:hover {
+  border-color: currentColor;
+  transform: translateY(-1px);
+}
+
+.att-toggle-btn:active { transform: scale(.96); }
+
+/* Present */
+.att-toggle-btn.present-opt:hover {
+  border-color: #10B981;
+  color: #10B981;
+  background: rgba(16,185,129,0.1);
+}
+
+.att-toggle-btn.present-opt.selected {
+  background: #10B981;
+  color: #fff;
+  border-color: #10B981;
+  box-shadow: 0 3px 12px rgba(16,185,129,.4);
+  font-weight: 800;
+}
+
+/* Absent */
+.att-toggle-btn.absent-opt:hover {
+  border-color: #F43F5E;
+  color: #F43F5E;
+  background: rgba(244,63,94,0.1);
+}
+
+.att-toggle-btn.absent-opt.selected {
+  background: #F43F5E;
+  color: #fff;
+  border-color: #F43F5E;
+  box-shadow: 0 3px 12px rgba(244,63,94,.4);
+  font-weight: 800;
+}
+
+/* Hidden radio backing */
+.att-radio-hidden { display: none; }
+
+/* Progress counter */
+.att-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+  padding: .65rem 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.att-progress-label { font-size: .78rem; color: var(--text-2); flex-shrink: 0; }
+.att-progress-bar-outer {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+
+.att-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #4ade80);
+  border-radius: var(--r-full);
+  transition: width .35s cubic-bezier(.4,0,.2,1);
+}
+
+.att-progress-count {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--green-text);
+  flex-shrink: 0;
+  min-width: 52px;
+  text-align: right;
+}
+
+/* Empty state */
+.att-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-3);
+}
+
+.att-empty i { font-size: 2.5rem; margin-bottom: .75rem; display: block; opacity: .4; }
+.att-empty p { font-size: .85rem; }
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Unstick the header on mobile — its negative margins cause page-level
+     horizontal overflow. On mobile we show it as a normal in-flow block. */
+  .att-sticky-header {
+    position: static !important;
+    margin: 0 0 1.25rem !important;
+    padding: .75rem 1rem !important;
+    border-radius: var(--r-lg);
+    /* retain the frosted look */
+    background: rgba(248,250,252,.98);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .att-summary { grid-template-columns: 1fr 1fr; }
+  .att-student-card { flex-wrap: wrap; }
+  .att-toggle-group { width: 100%; justify-content: flex-end; }
+  /* Toolbar: let items wrap so nothing overflows */
+  .att-toolbar { flex-wrap: wrap; }
+  .att-search-wrap { flex: 1 1 100%; min-width: 0; }
+  .att-room-filter { flex: 1 1 auto; min-width: 0; width: auto; }
+  /* Header right buttons: wrap and fill row */
+  .att-header-right { flex-wrap: wrap; gap: .4rem; }
+  .att-header-right .btn,
+  .att-header-right .abode-btn { flex: 1; justify-content: center; min-width: 120px; }
+}
+
+@media (max-width: 480px) {
+  .att-summary { grid-template-columns: 1fr 1fr; }
+  .att-header-right { width: 100%; }
+  .att-header-right .btn,
+  .att-header-right .abode-btn { flex: 1; justify-content: center; }
+  /* Stack summary to 1 column on very small phones */
+  .att-summary { grid-template-columns: 1fr; }
+}
+</style>
+
+<form id="attendanceForm" method="POST" action="{{ url_for('attendance.mark') }}">
+
+<!-- Hidden inputs for student IDs (only editable rows are submitted) -->
+{% for r in records %}
+{% if r.is_editable %}
+<input type="hidden" name="student_ids[]" value="{{ r.user_id }}">
+{% endif %}
+{% endfor %}
+<input type="hidden" name="attendance_date" value="{{ selected_date }}">
+
+<!-- ── Sticky Header ── -->
+<div class="att-sticky-header fade-in">
+  <div class="att-header-left">
+    <h1><i class="fas fa-calendar-check" style="color:var(--primary);margin-right:.4rem;"></i>Mark Attendance</h1>
+    <div class="att-date">
+      <i class="fas fa-calendar-days"></i>
+      <input type="date" id="attDatePicker" value="{{ selected_date }}" onchange="window.location.search='?date='+this.value" style="border:1.5px solid var(--border); border-radius:8px; padding:.25rem .5rem; font-family:inherit; color:var(--text); background:#fff;">
+    </div>
+  </div>
+  <div class="att-header-right">
+    <button type="button" class="btn btn-outline btn-sm" id="markAllPresent">
+      <i class="fas fa-check-double"></i> All Present
+    </button>
+    <button type="button" class="btn btn-danger btn-sm" id="markAllAbsent">
+      <i class="fas fa-xmark"></i> All Absent
+    </button>
+  </div>
+</div>
+
+<!-- ── Summary Bar ── -->
+<div class="att-summary fade-in fade-in-1">
+  <div class="att-summary-card">
+    <div class="att-summary-icon total"><i class="fas fa-users"></i></div>
+    <div class="att-summary-body">
+      <div class="label">Total Students</div>
+      <div class="value" id="cntTotal">{{ records|length }}</div>
+    </div>
+  </div>
+  <div class="att-summary-card">
+    <div class="att-summary-icon present"><i class="fas fa-check-circle"></i></div>
+    <div class="att-summary-body">
+      <div class="label">Present</div>
+      <div class="value" id="cntPresent" style="color:var(--green-text);">0</div>
+    </div>
+  </div>
+  <div class="att-summary-card">
+    <div class="att-summary-icon absent"><i class="fas fa-times-circle"></i></div>
+    <div class="att-summary-body">
+      <div class="label">Absent</div>
+      <div class="value" id="cntAbsent" style="color:var(--red-text);">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Search & Filter Toolbar ── -->
+<div class="att-toolbar fade-in fade-in-2">
+  <div class="att-search-wrap">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="text" id="attSearch" placeholder="Search students by name, roll no…" autocomplete="off">
+  </div>
+  <select class="att-room-filter" id="roomFilter">
+    <option value="">All Rooms</option>
+    {% set rooms = records | map(attribute='room_number') | unique | sort %}
+    {% for room in rooms %}
+    <option value="{{ room }}">Room {{ room }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<!-- ── Progress Bar ── -->
+<div class="att-progress-wrap fade-in fade-in-2">
+  <div class="att-progress-label"><i class="fas fa-chart-simple" style="color:var(--primary);"></i> Completion</div>
+  <div class="att-progress-bar-outer">
+    <div class="att-progress-bar-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div class="att-progress-count" id="progressLabel">0 / {{ records|length }}</div>
+</div>
+
+<!-- ── Student Card List ── -->
+<div class="att-card-list fade-in fade-in-3" id="attCardList">
+  {% for r in records %}
+  <div class="att-student-card" data-name="{{ r.full_name | lower }}" data-roll="{{ r.roll_number | lower }}" data-room="{{ r.room_number }}" data-uid="{{ r.user_id }}" {% if not r.is_editable %}data-locked="1"{% endif %}>
+    <div class="att-avatar">{{ (r.full_name or 'S')[:1].upper() }}</div>
+    <div class="att-student-info">
+      <div class="att-student-name">{{ r.full_name }}</div>
+      <div class="att-student-meta">
+        <span><i class="fas fa-id-card"></i> {{ r.roll_number }}</span>
+        <span><i class="fas fa-bed"></i> Room {{ r.room_number }}</span>
+        <span class="badge {{ r.status }}" style="font-size:.67rem;">{{ r.status | capitalize }}</span>
+      </div>
+    </div>
+    {% if r.is_editable %}
+    <div class="att-toggle-group">
+      <button type="button"
+        class="att-toggle-btn present-opt {% if r.status == 'present' %}selected{% endif %}"
+        data-uid="{{ r.user_id }}"
+        data-status="present">
+        <i class="fas fa-check"></i> Present
+      </button>
+      <button type="button"
+        class="att-toggle-btn absent-opt {% if r.status == 'absent' %}selected{% endif %}"
+        data-uid="{{ r.user_id }}"
+        data-status="absent">
+        <i class="fas fa-xmark"></i> Absent
+      </button>
+    </div>
+    {% else %}
+    <div style="font-size:.78rem; color:var(--text-3); font-weight:600; padding:.5rem .75rem; border:1.5px solid var(--border); border-radius:var(--r-sm); background:#fff;">
+      {{ r.status | capitalize }}
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="att-empty">
+    <i class="fas fa-user-slash"></i>
+    <p>No students found in the system.</p>
+  </div>
+  {% endfor %}
+</div>
+
+
+<div style="margin-top:1.5rem;display:flex;justify-content:flex-end;">
+  <button type="submit" class="btn btn-primary" onclick="collectAttendancePremium(event)">
+    <i class="fas fa-floppy-disk"></i> Save Attendance
+  </button>
+</div>
+</form>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── State: uid → 'present' | 'absent' | null ───────────
+  const state = {};
+
+  {% for r in records %}
+  state['{{ r.user_id }}'] = {% if r.status %}'{{ r.status }}'{% else %}null{% endif %};
+  {% endfor %}
+
+  // ── DOM refs ────────────────────────────────────────────
+  const cardList    = document.getElementById('attCardList');
+  const searchInput = document.getElementById('attSearch');
+  const roomFilter  = document.getElementById('roomFilter');
+  const cntPresent  = document.getElementById('cntPresent');
+  const cntAbsent   = document.getElementById('cntAbsent');
+  const progressFill  = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const totalStudents = {{ records|length }};
+
+  // ── Update summary counts ───────────────────────────────
+  function updateCounts() {
+    let p = 0, a = 0, marked = 0;
+    Object.values(state).forEach(v => {
+      if (v === 'present') { p++; marked++; }
+      if (v === 'absent')  { a++; marked++; }
+    });
+    cntPresent.textContent = p;
+    cntAbsent.textContent  = a;
+
+    const pct = totalStudents ? Math.round(marked / totalStudents * 100) : 0;
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = marked + ' / ' + totalStudents;
+  }
+
+  // ── Card state sync ─────────────────────────────────────
+  function applyCardState(card, status) {
+    card.classList.toggle('is-present', status === 'present');
+    card.classList.toggle('is-absent',  status === 'absent');
+
+    card.querySelectorAll('.att-toggle-btn').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.status === status);
+    });
+  }
+
+  // ── Init: apply pre-selected states ────────────────────
+  document.querySelectorAll('.att-student-card').forEach(card => {
+    const uid = card.dataset.uid;
+    if (state[uid]) applyCardState(card, state[uid]);
+  });
+  updateCounts();
+
+  // ── Toggle button click ─────────────────────────────────
+  cardList.addEventListener('click', e => {
+    const btn = e.target.closest('.att-toggle-btn');
+    if (!btn) return;
+    const uid    = btn.dataset.uid;
+    const status = btn.dataset.status;
+    state[uid] = status;
+    const card = btn.closest('.att-student-card');
+    applyCardState(card, status);
+    updateCounts();
+  });
+
+  // ── Bulk actions ────────────────────────────────────────
+  document.getElementById('markAllPresent')?.addEventListener('click', () => {
+    document.querySelectorAll('.att-student-card').forEach(card => {
+      if (card.style.display === 'none' || card.dataset.locked) return; // respect filter + lock
+      const uid = card.dataset.uid;
+      state[uid] = 'present';
+      applyCardState(card, 'present');
+    });
+    updateCounts();
+  });
+
+  document.getElementById('markAllAbsent')?.addEventListener('click', () => {
+    document.querySelectorAll('.att-student-card').forEach(card => {
+      if (card.style.display === 'none' || card.dataset.locked) return;
+      const uid = card.dataset.uid;
+      state[uid] = 'absent';
+      applyCardState(card, 'absent');
+    });
+    updateCounts();
+  });
+
+  // ── Search filter ───────────────────────────────────────
+  function filterCards() {
+    const q    = searchInput.value.toLowerCase().trim();
+    const room = roomFilter.value;
+    document.querySelectorAll('.att-student-card').forEach(card => {
+      const matchQ    = !q || card.dataset.name.includes(q) || card.dataset.roll.includes(q);
+      const matchRoom = !room || card.dataset.room === room;
+      card.style.display = (matchQ && matchRoom) ? '' : 'none';
+    });
+  }
+
+  searchInput.addEventListener('input', filterCards);
+  roomFilter.addEventListener('change', filterCards);
+
+  // ── Collect statuses before form submit ─────────────────
+  window.collectAttendancePremium = function (e) {
+    // Remove old hidden status inputs
+    document.querySelectorAll('input[name="statuses[]"][type="hidden"]').forEach(el => el.remove());
+
+    // For every student_id input, look up the state
+    document.querySelectorAll('input[name="student_ids[]"]').forEach(input => {
+      const uid    = input.value;
+      const status = state[uid] || 'present'; // default present if untouched
+      const hidden = document.createElement('input');
+      hidden.type  = 'hidden';
+      hidden.name  = 'statuses[]';
+      hidden.value = status;
+      document.getElementById('attendanceForm').appendChild(hidden);
+    });
+  };
+
+})();
+</script>
+
+{% else %}
+<!-- ============================================================
+     STUDENT: ATTENDANCE HISTORY VIEW (premium card style)
+     ============================================================ -->
+<div class="page-header fade-in">
+  <div class="page-header-left">
+    <div class="breadcrumb"><i class="fas fa-calendar-check"></i> Attendance</div>
+    <h1>My Attendance</h1>
+    <p>Your attendance record for the last 30 days</p>
+  </div>
+</div>
+
+{% if summary %}
+<div class="stats-grid fade-in fade-in-1">
+  <div class="stat-card green">
+    <div class="stat-icon-wrap"><i class="fas fa-check-circle"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Days Present</div>
+      <div class="stat-value" data-count="{{ summary.present or 0 }}">{{ summary.present or 0 }}</div>
+      <div class="stat-sub">Last 30 days</div>
+    </div>
+  </div>
+  <div class="stat-card red">
+    <div class="stat-icon-wrap"><i class="fas fa-times-circle"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Days Absent</div>
+      <div class="stat-value" data-count="{{ summary.absent or 0 }}">{{ summary.absent or 0 }}</div>
+      <div class="stat-sub">Last 30 days</div>
+    </div>
+  </div>
+  <div class="stat-card blue">
+    <div class="stat-icon-wrap"><i class="fas fa-chart-pie"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Attendance Rate</div>
+      <div class="stat-value">
+        {% if summary.total %}{{ "%.0f"|format(summary.present / summary.total * 100) }}%{% else %}—{% endif %}
+      </div>
+      <div class="stat-sub">Overall performance</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card fade-in fade-in-3" style="margin-top:1rem;">
+  <div class="card-header">
+    <h3><i class="fas fa-history"></i> Recent Records</h3>
+  </div>
+  {% if records %}
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td>{{ r.date }}</td>
+          <td><span class="badge {{ r.status }}">{{ r.status | capitalize }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-calendar-xmark"></i>
+    <p>No attendance records yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

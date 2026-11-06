@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Roommate Profile Setup - SmartHostel{% endblock %}
+{% block content %}
+
+<div class="form-page" style="padding-top:1.5rem;">
+    <div class="profile-setup-card fade-in" style="width:100%;">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+            <i class="fas fa-heart" style="color:var(--red);font-size:1.4rem;"></i>
+            <h2 style="margin:0;">Roommate Profile Setup</h2>
+        </div>
+        <p>Tell us your preferences so we can find your best roommate match.</p>
+
+        <form method="POST" style="display:flex;flex-direction:column;gap:0;">
+
+
+
+            <!-- Section: Sleep & Environment -->
+            <div class="pref-section-label"><i class="fas fa-moon" style="color:var(--blue);"></i> Sleep & Environment</div>
+            <div class="preference-grid">
+                <div class="pref-group">
+                    <label><i class="fas fa-snowflake"></i> AC Temperature</label>
+                    <select name="q1">
+                        <option value="1" {% if profile and profile.q1 == 1 %}selected{% endif %}>Freezing (18–20°C)</option>
+                        <option value="2" {% if profile and profile.q1 == 2 %}selected{% endif %}>Cool (21–23°C)</option>
+                        <option value="3" {% if not profile or profile.q1 == 3 %}selected{% endif %}>Comfortable (24–26°C)</option>
+                        <option value="4" {% if profile and profile.q1 == 4 %}selected{% endif %}>Fan is enough</option>
+                    </select>
+                </div>
+                <div class="pref-group">
+                    <label><i class="fas fa-wind"></i> Fan Speed While Sleeping</label>
+                    <select name="q2">
+                        <option value="1" {% if profile and profile.q2 == 1 %}selected{% endif %}>Full speed</option>
+                        <option value="2" {% if profile and profile.q2 == 2 %}selected{% endif %}>Fast</option>
+                        <option value="3" {% if not profile or profile.q2 == 3 %}selected{% endif %}>Medium</option>
+                        <option value="4" {% if profile and profile.q2 == 4 %}selected{% endif %}>Slow or OFF</option>
+                    </select>
+                </div>
+                <div class="pref-group">
+                    <label><i class="fas fa-lightbulb"></i> Room Lights When Sleeping</label>
+                    <select name="q3">
+                        <option value="1" {% if profile and profile.q3 == 1 %}selected{% endif %}>Complete darkness</option>
+                        <option value="2" {% if not profile or profile.q3 == 2 %}selected{% endif %}>Night lamp only</option>
+                        <option value="3" {% if profile and profile.q3 == 3 %}selected{% endif %}>Dim light</option>
+                        <option value="4" {% if profile and profile.q3 == 4 %}selected{% endif %}>Bright light is fine</option>
+                    </select>
+                </div>
+                <div class="pref-group">
+                    <label><i class="fas fa-bed"></i> Bedtime</label>
+                    <select name="q4">
+                        <option value="1" {% if profile and profile.q4 == 1 %}selected{% endif %}>Before 10 PM</option>
+                        <option value="2" {% if not profile or profile.q4 == 2 %}selected{% endif %}>10 PM – 12 AM</option>
+                        <option value="3" {% if profile and profile.q4 == 3 %}selected{% endif %}>12 – 2 AM</option>
+                        <option value="4" {% if profile and profile.q4 == 4 %}selected{% endif %}>After 2 AM</option>
+                    </select>
+                </div>
+                <div class="pref-group">
+                    <label><i class="fas fa-sun"></i> Wake Up Time</label>
+                    <select name="q5">
+                        <option value="1" {% if profile and profile.q5 == 1 %}selected{% endif %}>Before 6 AM</option>
+                        <option value="2" {% if not profile or profile.q5 == 2 %}selected{% endif %}>6 – 8 AM</option>
+                        <option value="3" {% if profile and profile.q5 == 3 %}selected{% endif %}>8 – 10 AM</option>
+                        <option value="4" {% if profile and profile.q5 == 4 %}selected{% endif %}>After 10 AM</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section: Personality & Lifestyle -->
+            <div class="pref-section-label"><i class="fas fa-user-group" style="color:var(--primary);"></i> Personality & Lifestyle</div>
+            <div class="preference-grid">
+                <div class="pref-group">
+                    <label><i class="fas fa-brain"></i> Personality Type</label>
+                    <select name="q6">
+                        <option value="1" {% if profile and profile.q6 == 1 %}selected{% endif %}>Strong introvert</option>
+                        <option value="2" {% if not profile or profile.q6 == 2 %}selected{% endif %}>Slight introvert</option>
+                        <option value="3" {% if profile and profile.q6 == 3 %}selected{% endif %}>Slight extrovert</option>
+                        <option value="4" {% if profile and profile.q6 == 4 %}selected{% endif %}>Full extrovert</option>
+                    </select>
+                </div>
+                <div class="pref-group">
+                    <label><i class="fas fa-door-open"></i> Friends Visiting Room</label>
+                    <select name="q7">
+                        <option value="1" {% if profile and profile.q7 == 1 %}selected{% endif %}>Never</option>
+                        <option value="2" {% if not profile or profile.q7 == 2 %}selected{% endif %}>Rarely</option>
+                        <option value="3" {% if profile and profile.q7 == 3 %}selected{% endif %}>Sometimes</option>
+                        <option value="4" {% if profile and profile.q7 == 4 %}selected{% endif %}>Very often</option>
+                    </select>
+                </div>
+                <div class="pref-group">
+                    <label><i class="fas fa-tv"></i> Watching Videos / TV</label>
+                    <select name="q8">
+                        <option value="1" {% if profile and profile.q8 == 1 %}selected{% endif %}>Prefer silence</option>
+                        <option value="2" {% if not profile or profile.q8 == 2 %}selected{% endif %}>Only headphones</option>
+                        <option value="3" {% if profile and profile.q8 == 3 %}selected{% endif %}>Low volume</option>
+                        <option value="4" {% if profile and profile.q8 == 4 %}selected{% endif %}>Movie nights often</option>
+                    </select>
+                </div>
+                <div class="pref-group">
+                    <label><i class="fas fa-music"></i> Music in Room</label>
+                    <select name="q9">
+                        <option value="1" {% if profile and profile.q9 == 1 %}selected{% endif %}>No music</option>
+                        <option value="2" {% if not profile or profile.q9 == 2 %}selected{% endif %}>Headphones only</option>
+                        <option value="3" {% if profile and profile.q9 == 3 %}selected{% endif %}>Low volume speaker</option>
+                        <option value="4" {% if profile and profile.q9 == 4 %}selected{% endif %}>Loud music</option>
+                    </select>
+                </div>
+                <div class="pref-group">
+                    <label><i class="fas fa-utensils"></i> Food Preference</label>
+                    <select name="q10">
+                        <option value="1" {% if profile and profile.q10 == 1 %}selected{% endif %}>Pure Veg</option>
+                        <option value="2" {% if profile and profile.q10 == 2 %}selected{% endif %}>Eggetarian</option>
+                        <option value="3" {% if not profile or profile.q10 == 3 %}selected{% endif %}>Non-Veg</option>
+                        <option value="4" {% if profile and profile.q10 == 4 %}selected{% endif %}>Doesn't matter</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top:1.5rem;">
+                <button type="submit" class="btn-primary btn-lg" style="min-width:200px;">
+                    <i class="fas fa-search-heart"></i>
+                    {% if profile %}Update Profile & Find Matches{% else %}Save Profile & Find Matches{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Warden Dashboard — SmartHostel{% endblock %}
+{% block content %}
+<style>
+.priority-water-complaint {
+    background: rgba(239, 68, 68, 0.05) !important;
+    border-left: 5px solid #EF4444 !important;
+}
+.badge-priority {
+    background: #EF4444;
+    color: white !important;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    margin-right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.pulsing-red {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    animation: pulse-red-dashboard 1.5s infinite;
+}
+@keyframes pulse-red-dashboard {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+.tag-hot-water {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #EF4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    font-weight: 700;
+}
+.tag-cold-water {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #3B82F6 !important;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-weight: 700;
+}
+</style>
+
+<div class="page-header fade-in">
+    <div class="page-header-left">
+        <div class="breadcrumb"><i class="fas fa-gauge-high"></i> Dashboard</div>
+        <h1>Warden Dashboard</h1>
+        <p>Welcome back, {{ session.full_name }}. Here's your hostel overview.</p>
+    </div>
+    <div class="page-header-right">
+        <a href="{{ url_for('notification.send') }}"     class="abode-btn abode-btn-outline"><i class="fas fa-bell"></i> Notify Students</a>
+        <a href="{{ url_for('attendance.view') }}"       class="abode-btn abode-btn-primary"><i class="fas fa-calendar-check"></i> Mark Attendance</a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card blue fade-in fade-in-1">
+        <div class="stat-icon-wrap"><i class="fas fa-user-graduate"></i></div>
+        <div class="stat-body">
+            <div class="stat-label">Total Students</div>
+            <div class="stat-value" data-count="{{ total_students }}">{{ total_students }}</div>
+            <div class="stat-sub">Registered in system</div>
+        </div>
+    </div>
+    <div class="stat-card orange fade-in fade-in-2">
+        <div class="stat-icon-wrap"><i class="fas fa-clipboard-list"></i></div>
+        <div class="stat-body">
+            <div class="stat-label">Pending Complaints</div>
+            <div class="stat-value" data-count="{{ pending_complaints }}">{{ pending_complaints }}</div>
+            <div class="stat-sub">Awaiting action</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Grid -->
+<div class="dash-grid">
+
+    <!-- Attendance -->
+    <div class="card fade-in fade-in-1">
+        <div class="card-header">
+            <h3><i class="fas fa-calendar-check"></i> Today's Attendance</h3>
+            <a href="{{ url_for('attendance.view') }}" class="abode-btn abode-btn-primary"><i class="fas fa-check-double"></i> Mark Now</a>
+        </div>
+        <div class="card-body">
+            <div class="mini-stats">
+                <div class="mini-stat green"><i class="fas fa-check"></i> Present: {{ attendance_today.present_count or 0 }}</div>
+                <div class="mini-stat red"><i class="fas fa-xmark"></i> Absent: {{ attendance_today.absent_count or 0 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card fade-in fade-in-2">
+        <div class="card-header">
+            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:.6rem;">
+            <a href="{{ url_for('notification.send') }}" class="abode-btn abode-btn-outline" style="width:100%"><i class="fas fa-bell"></i> Send Notification</a>
+            <a href="{{ url_for('warden.manage_staff') }}" class="abode-btn abode-btn-outline" style="width:100%"><i class="fas fa-users-cog"></i> Manage Staff</a>
+            <a href="{{ url_for('menu.edit_menu') }}" class="abode-btn abode-btn-outline" style="width:100%">
+                <i class="fas fa-calendar-week"></i> Update Menu
+            </a>
+            <a href="{{ url_for('emergency.view_contacts') }}" class="abode-btn abode-btn-outline" style="width:100%"><i class="fas fa-phone-volume"></i> Emergency Contacts</a>
+        </div>
+    </div>
+
+
+    <!-- Recent Complaints -->
+    <div class="card wide fade-in fade-in-3">
+        <div class="card-header">
+            <h3><i class="fas fa-clipboard-list"></i> Recent Complaints</h3>
+            <a href="{{ url_for('complaint.list_complaints') }}" class="btn btn-ghost btn-sm">View all <i class="fas fa-arrow-right"></i></a>
+        </div>
+        {% if complaints %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead><tr><th>Student</th><th>Title</th><th>Room</th><th>Category</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                {% for c in complaints %}
+                <tr class="{% if c.category in ['hot_water', 'cold_water'] %}priority-water-complaint{% endif %}">
+                    <td>{{ c.full_name }}</td>
+                    <td>
+                        {% if c.category in ['hot_water', 'cold_water'] %}
+                            <span class="badge-priority pulsing-red"><i class="fas fa-triangle-exclamation"></i> PRIORITY</span>
+                        {% endif %}
+                        {{ c.title }}
+                    </td>
+                    <td>{{ c.room_number }}</td>
+                    <td>
+                        {% if c.category == 'hot_water' %}
+                            <span class="tag tag-hot-water">🔥 Hot Water</span>
+                        {% elif c.category == 'cold_water' %}
+                            <span class="tag tag-cold-water">❄️ Cold Water</span>
+                        {% else %}
+                            <span class="tag">{{ c.category|category_emoji }} {{ c.category|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge-status {{ 'green' if c.status == 'resolved' else 'yellow' if c.status == 'in_progress' else 'red' }}">
+                            {{ c.status|replace('_',' ')|title }}
+                        </span>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('complaint.update_status', complaint_id=c.id) }}" class="inline-form">
+                            <select name="status" class="select-sm">
+                                <option value="pending"     {{ 'selected' if c.status == 'pending' }}>Pending</option>
+                                <option value="in_progress" {{ 'selected' if c.status == 'in_progress' }}>In Progress</option>
+                                <option value="resolved"    {{ 'selected' if c.status == 'resolved' }}>Resolved</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="fas fa-clipboard-check"></i><p>No open complaints.</p></div>
+        {% endif %}
+    </div>
+
+
+
+    <!-- Upcoming Birthdays -->
+    <div class="card fade-in fade-in-4">
+        <div class="card-header">
+            <h3><i class="fas fa-cake-candles"></i> Upcoming Birthdays</h3>
+        </div>
+        <div class="card-body">
+            {% if upcoming_birthdays %}
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.5rem; font-size:.9rem; font-weight:500; color:var(--text);">
+                {% for b in upcoming_birthdays %}
+                <li style="display:flex; align-items:center; justify-content:space-between; padding:.5rem .75rem; background:rgba(255,255,255,0.6); border-radius:12px; border:1px solid var(--border);">
+                    <span><i class="fas fa-cake-candles" style="color:var(--abode-pink); margin-right:.4rem;"></i>{{ b.full_name }}</span>
+                    <span style="color:var(--text-3); font-size:.8rem;">{% if b.days_until == 0 %}Today{% elif b.days_until == 1 %}Tomorrow{% else %}in {{ b.days_until }} days{% endif %}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state" style="padding:1rem;"><p>No upcoming birthdays in the next 2 days.</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

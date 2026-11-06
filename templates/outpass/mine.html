@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}My Outpasses - Abode{% endblock %}
+{% block content %}
+
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+        <h1 style="font-size:1.7rem;font-weight:800;color:#0f172a;letter-spacing:-0.025em;">My Outpasses</h1>
+        <p style="color:#64748b;font-size:0.9rem;">Tap I've Arrived when you are back on campus.</p>
+    </div>
+    <a href="{{ url_for('outpass.create_request') }}" class="btn btn-primary" style="padding:0.6rem 1.2rem;border-radius:10px;background:#2563eb;color:#fff;text-decoration:none;font-weight:700;font-size:0.88rem;">Log New Outpass</a>
+</div>
+
+<div id="checkinMsg" class="alert" style="display:none;padding:0.9rem 1.1rem;border-radius:10px;margin-bottom:1.25rem;font-weight:700;font-size:0.9rem;"></div>
+
+{% if outpasses %}
+<div class="outpass-list" style="display:flex;flex-direction:column;gap:0.85rem;">
+{% for op in outpasses %}
+    <div class="outpass-card" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;box-shadow:0 4px 14px rgba(15,23,42,0.03);">
+        <div style="min-width:220px;flex:1;">
+            <div style="font-weight:800;color:#0f172a;font-size:1rem;">{{ op.type.title() }} <span style="font-weight:700;font-size:0.78rem;padding:0.2rem 0.6rem;border-radius:20px;margin-left:0.5rem;
+                {% if op.status == 'completed' %}background:#dcfce7;color:#16a34a;{% elif op.status == 'overdue' %}background:#fee2e2;color:#dc2626;{% else %}background:#dbeafe;color:#2563eb;{% endif %}">{{ op.status }}</span></div>
+            <div style="color:#64748b;font-size:0.85rem;margin-top:0.35rem;"><i class="fas fa-location-dot" style="color:#2563eb;margin-right:0.35rem;"></i>{{ op.destination }} &middot; {{ op.purpose }}</div>
+            <div style="color:#475569;font-size:0.8rem;margin-top:0.25rem;">Return by <strong>{{ op.return_at }}</strong></div>
+        </div>
+        {% if op.status != 'completed' %}
+        <button class="btn btn-primary" onclick="checkIn({{ op.id }})" style="padding:0.6rem 1.1rem;border-radius:10px;background:#2563eb;color:#fff;border:none;font-weight:700;cursor:pointer;min-width:130px;">
+            <i class="fas fa-location-crosshairs"></i> I've Arrived
+        </button>
+        {% else %}
+        <div style="color:#16a34a;font-size:0.85rem;font-weight:700;"><i class="fas fa-check-circle"></i> Checked in at {{ op.checked_in_at }}</div>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
+{% else %}
+    <div style="text-align:center;padding:3rem 1rem;color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;">
+        <i class="fas fa-plane-departure" style="font-size:2rem;color:#94a3b8;margin-bottom:0.75rem;display:block;"></i>
+        No outpasses logged yet.
+    </div>
+{% endif %}
+
+<script>
+function checkIn(id) {
+    const msg = document.getElementById('checkinMsg');
+    msg.style.display = 'block';
+    msg.style.background = '#eff6ff';
+    msg.style.color = '#1d4ed8';
+    msg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting your location...';
+    if (!navigator.geolocation) {
+        msg.style.background = '#fee2e2';
+        msg.style.color = '#b91c1c';
+        msg.innerHTML = 'GPS is not supported on this device.';
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            fetch('/outpass/api/checkin/' + id, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({lat: pos.coords.latitude, lng: pos.coords.longitude})
+            })
+            .then(r => r.json())
+            .then(data => {
+                msg.style.background = data.success ? '#dcfce7' : '#fee2e2';
+                msg.style.color = data.success ? '#166534' : '#991b1b';
+                msg.innerHTML = '<i class="fas fa-' + (data.success ? 'check-circle' : 'circle-xmark') + '"></i> ' + data.message;
+                if (data.success) setTimeout(() => location.reload(), 1200);
+            })
+            .catch(() => {
+                msg.style.background = '#fee2e2';
+                msg.style.color = '#991b1b';
+                msg.innerHTML = 'Network error.';
+            });
+        },
+        () => {
+            msg.style.background = '#fee2e2';
+            msg.style.color = '#991b1b';
+            msg.innerHTML = 'Could not get GPS location. Enable location services and try again.';
+        },
+        {enableHighAccuracy: true, timeout: 10000, maximumAge: 0}
+    );
+}
+</script>
+
+{% endblock %}

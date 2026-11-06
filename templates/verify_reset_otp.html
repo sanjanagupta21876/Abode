@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Verify Email — Abode{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <section class="auth-card">
+        <div class="auth-header">
+            <h2>Verify your email</h2>
+            <p>Enter the six-digit code from your email. It expires after 10 minutes and allows five attempts.</p>
+        </div>
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="otp">Email OTP</label>
+                <input class="form-control" type="text" id="otp" name="otp" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="123456">
+            </div>
+            <button class="btn btn-primary" type="submit">Verify OTP</button>
+        </form>
+        <div class="auth-footer"><a href="{{ url_for('auth.forgot_password') }}">Request a new code</a></div>
+    </section>
+</div>
+{% endblock %}

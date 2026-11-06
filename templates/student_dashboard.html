@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Abode{% endblock %}
+{% block content %}
+
+<!-- ═══ Hero Banner ═══ -->
+<div class="dash-hero fade-in" style="margin-bottom:2rem;">
+  <div class="dash-hero-overlay">
+    <div class="dash-hero-left">
+      <div class="dash-hero-greeting">Welcome back 👋</div>
+      <h1 class="dash-hero-name">{{ (student.full_name if student else session.full_name).split()[0] }}</h1>
+      {% if student %}
+      <div class="dash-hero-meta">
+        <span><i class="fas fa-graduation-cap"></i> {{ student.course }}</span>
+        <span class="dash-hero-sep">·</span>
+        <span><i class="fas fa-bed"></i> Room {{ student.room_number }}</span>
+        <span class="dash-hero-sep">·</span>
+        <span><i class="fas fa-id-card"></i> {{ student.roll_number }}</span>
+      </div>
+      {% else %}
+      <div class="dash-hero-meta"><span>Manage your residence services in one place.</span></div>
+      {% endif %}
+    </div>
+    <div class="dash-hero-right">
+      <div class="dash-hero-badge"><i class="fas fa-shield-halved"></i> NSC Bose International</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.dash-hero {
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  min-height: 175px;
+  background: url('/static/hostel/entrance.jpg.png') center/cover no-repeat;
+  box-shadow: 0 8px 32px rgba(0,110,187,0.18);
+}
+.dash-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, rgba(10,25,70,0.88) 0%, rgba(0,80,150,0.72) 60%, rgba(0,110,187,0.45) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.75rem 2rem;
+  gap: 1rem;
+}
+.dash-hero-left {}
+.dash-hero-greeting {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.78);
+  letter-spacing: 0.03em;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+.dash-hero-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 0.65rem;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+.dash-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
+.dash-hero-meta i { opacity: 0.8; }
+.dash-hero-sep { opacity: 0.45; font-weight: 300; }
+.dash-hero-right {
+  flex-shrink: 0;
+}
+.dash-hero-badge {
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .dash-hero-right { display: none; }
+  .dash-hero-overlay { padding: 1.25rem 1.25rem; }
+  .dash-hero-name { font-size: 1.6rem; }
+}
+</style>
+
+
+{# ── Stats Row ── #}
+<div class="abode-stats-row">
+  <div class="abode-stat-pill fade-in fade-in-1">
+    <div class="abode-stat-pill-icon mint">
+      <i class="fas fa-calendar-check"></i>
+    </div>
+    <div>
+      <div style="font-size:1.5rem;font-weight:900;color:#0F172A;line-height:1;letter-spacing:-0.025em;">
+        {{ attendance.present_count or 0 }}
+      </div>
+      <div style="font-size:0.75rem;color:#64748B;font-weight:600;margin-top:2px;">Days Present</div>
+    </div>
+  </div>
+
+  <div class="abode-stat-pill fade-in fade-in-2">
+    <div class="abode-stat-pill-icon pink">
+      <i class="fas fa-calendar-xmark"></i>
+    </div>
+    <div>
+      <div style="font-size:1.5rem;font-weight:900;color:#0F172A;line-height:1;letter-spacing:-0.025em;">
+        {{ attendance.absent_count or 0 }}
+      </div>
+      <div style="font-size:0.75rem;color:#64748B;font-weight:600;margin-top:2px;">Days Absent</div>
+    </div>
+  </div>
+
+  <div class="abode-stat-pill fade-in fade-in-3">
+    <div class="abode-stat-pill-icon lavender">
+      <i class="fas fa-clipboard-list"></i>
+    </div>
+    <div>
+      <div style="font-size:1.5rem;font-weight:900;color:#0F172A;line-height:1;letter-spacing:-0.025em;">
+        {{ complaints|length }}
+      </div>
+      <div style="font-size:0.75rem;color:#64748B;font-weight:600;margin-top:2px;">Complaints</div>
+    </div>
+  </div>
+
+
+</div>
+
+{# ── Pastel Feature Cards ── #}
+<div class="abode-dash-grid">
+
+  {# Room Details #}
+  <div class="abode-feature-card beige fade-in fade-in-1">
+    <span class="abode-card-icon"><i class="fas fa-bed"></i></span>
+    <div class="abode-card-title">Room Details</div>
+    <div class="abode-card-subtitle">
+      {% if student %}
+        Room <strong>{{ student.room_number }}</strong> · {{ student.course }}
+        <br>Hostel Block · Year {{ student.year }}
+      {% else %}
+        View your room assignment and block details
+      {% endif %}
+    </div>
+    <div class="abode-card-arrow"><i class="fas fa-arrow-right"></i></div>
+  </div>
+
+  {# Weekly Menu #}
+  <a href="{{ url_for('menu.view_menu') }}" style="text-decoration:none;">
+    <div class="abode-feature-card mint fade-in fade-in-2">
+      <span class="abode-card-icon"><i class="fas fa-utensils"></i></span>
+      <div class="abode-card-title">Today's Menu</div>
+      <div class="abode-card-subtitle">
+        Check today's meals and the full weekly menu schedule
+      </div>
+      <div class="abode-card-arrow"><i class="fas fa-arrow-right"></i></div>
+    </div>
+  </a>
+
+  {# Complaints #}
+  <a href="{{ url_for('complaint.list_complaints') }}" style="text-decoration:none;">
+    <div class="abode-feature-card pink fade-in fade-in-3">
+      <span class="abode-card-icon"><i class="fas fa-clipboard-list"></i></span>
+      <div class="abode-card-title">Complaints</div>
+      <div class="abode-card-subtitle">
+        {% if complaints %}
+          {{ complaints|length }} complaint{{ 's' if complaints|length != 1 }} on record
+          <br>
+          {% set open_c = complaints|selectattr('status','equalto','open')|list %}
+          {% if open_c %}
+            <span style="color:#1D4ED8;font-weight:600;">{{ open_c|length }} open</span>
+          {% else %}
+            <span style="color:#16A34A;font-weight:600;">All resolved ✓</span>
+          {% endif %}
+        {% else %}
+          No complaints have been submitted.
+        {% endif %}
+      </div>
+      <div class="abode-card-arrow"><i class="fas fa-arrow-right"></i></div>
+    </div>
+  </a>
+
+  {# Attendance #}
+  <a href="{{ url_for('attendance.view') }}" style="text-decoration:none;">
+    <div class="abode-feature-card lavender fade-in fade-in-4">
+      <span class="abode-card-icon"><i class="fas fa-calendar-check"></i></span>
+      <div class="abode-card-title">Attendance</div>
+      <div class="abode-card-subtitle">
+        {% if attendance %}
+          {% set total = (attendance.present_count or 0) + (attendance.absent_count or 0) %}
+          {% if total > 0 %}
+            {{ ((attendance.present_count or 0) / total * 100)|round|int }}% attendance rate
+          {% else %}
+            No records yet
+          {% endif %}
+        {% else %}
+          Track your daily hostel attendance
+        {% endif %}
+      </div>
+      <div class="abode-card-arrow"><i class="fas fa-arrow-right"></i></div>
+    </div>
+  </a>
+
+  {# Notices/Notifications #}
+  <a href="{{ url_for('notification.view') }}" style="text-decoration:none;">
+    <div class="abode-feature-card blue-soft fade-in fade-in-5">
+      <span class="abode-card-icon"><i class="fas fa-bell"></i></span>
+      <div class="abode-card-title">Notices</div>
+      <div class="abode-card-subtitle">
+        {% if notifications %}
+          {{ notifications|length }} latest notice{{ 's' if notifications|length != 1 }}
+          {% if unread_count > 0 %}
+            · <span style="color:#2563EB;font-weight:600;">{{ unread_count }} unread</span>
+          {% endif %}
+        {% else %}
+          No new notices from the hostel office
+        {% endif %}
+      </div>
+      <div class="abode-card-arrow"><i class="fas fa-arrow-right"></i></div>
+    </div>
+  </a>
+
+  {# Roommate Matching #}
+  <a href="{{ url_for('roommate.swipe') }}" style="text-decoration:none;">
+    <div class="abode-feature-card pink fade-in fade-in-1">
+      <span class="abode-card-icon"><i class="fas fa-user-group"></i></span>
+      <div class="abode-card-title">Roommate Matching</div>
+      <div class="abode-card-subtitle">
+        Find your perfect roommate based on lifestyle &amp; compatibility
+      </div>
+      <div class="abode-card-arrow"><i class="fas fa-arrow-right"></i></div>
+    </div>
+  </a>
+
+</div>
+
+{% endblock %}

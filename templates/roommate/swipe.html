@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+{% block title %}Find Your Roommate – Abode{% endblock %}
+
+{% block content %}
+<style>
+/* ── Page layout ────────────────────────────────────────────── */
+.swipe-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 1rem 4rem;
+}
+
+.swipe-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+  animation: fadeSlideUp .4s ease both;
+}
+
+.swipe-header h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1A1A1A;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.3rem;
+}
+
+.swipe-header p {
+  font-size: 0.88rem;
+  color: #8A7A9A;
+}
+
+.swipe-header-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+/* ── Card stack ──────────────────────────────────────────────── */
+.tinder-wrapper {
+  position: relative;
+  height: 560px;
+  margin-bottom: 1.25rem;
+}
+
+.tinder-card {
+  position: absolute;
+  inset: 0;
+  background: white;
+  border-radius: 28px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,.04),
+    0 8px 24px rgba(180,100,220,.10),
+    0 24px 48px rgba(180,100,220,.07);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform .35s cubic-bezier(.34,1.4,.64,1), opacity .3s;
+  transform-origin: 50% 100%;
+  z-index: 2;
+  border: 1.5px solid rgba(220,200,240,.5);
+  cursor: grab;
+}
+
+.tinder-card:nth-child(2) {
+  transform: scale(.96) translateY(10px);
+  z-index: 1;
+}
+.tinder-card:nth-child(3) {
+  transform: scale(.92) translateY(20px);
+  z-index: 0;
+}
+
+.tinder-card.is-animating { transition: transform .35s cubic-bezier(.34,1.4,.64,1); }
+
+.tinder-card.removed {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(140%) rotate(25deg) !important;
+}
+
+.tinder-card.removed-left {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-140%) rotate(-25deg) !important;
+}
+
+/* ── Card header / avatar section ─────────────────────────── */
+.card-hero {
+  height: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Each card gets a pastel gradient — driven by JS modulo */
+.card-hero.grad-a,
+.card-hero.grad-b,
+.card-hero.grad-c,
+.card-hero.grad-d,
+.card-hero.grad-e { background: #E6F4FC; }
+
+/* Big bubbly circles in background */
+.card-hero::before {
+  content: '';
+  position: absolute;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  top: -50px; right: -40px;
+}
+.card-hero::after {
+  content: '';
+  position: absolute;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.10);
+  bottom: -30px; left: -30px;
+}
+
+.avatar-ring {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  border: 4px solid rgba(255,255,255,0.7);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  position: relative; z-index: 2;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  animation: avatarPop 0.5s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes avatarPop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.compat-chip {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 5px 14px;
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  z-index: 3;
+  border: 1px solid rgba(255,255,255,0.4);
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* ── Card body ─────────────────────────────────────────────── */
+.card-body-r {
+  padding: 1.25rem 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.card-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin: 0 0 2px;
+  letter-spacing: -0.3px;
+}
+
+.card-meta {
+  font-size: 0.82rem;
+  color: #8A7A9A;
+  font-weight: 500;
+}
+
+/* Highlights */
+.highlights-box {
+  background: linear-gradient(135deg, #EFF6FF, #E0F2FE);
+  border: 1.5px solid #BFDBFE;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.highlights-box h6 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1D4ED8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px;
+  display: flex; align-items: center; gap: 5px;
+}
+
+.highlights-box li {
+  font-size: 0.83rem;
+  color: #334155;
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+
+/* Trait grid */
+.trait-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.trait-chip {
+  background: #FAFAFA;
+  border: 1.5px solid #F0ECFA;
+  border-radius: 12px;
+  padding: 9px 12px;
+}
+
+.trait-chip-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #B4A0CC;
+  margin-bottom: 3px;
+}
+
+.trait-chip-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* ── Swipe buttons ─────────────────────────────────────────── */
+.swipe-btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.swipe-btn {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+  overflow: hidden;
+}
+
+.swipe-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+.swipe-btn:hover { transform: scale(1.12); }
+.swipe-btn:active { transform: scale(0.95); }
+
+.swipe-btn.nope {
+  background: white;
+  border: 2.5px solid #FCA5A5;
+  color: #EF4444;
+  box-shadow: 0 4px 16px rgba(239,68,68,0.15);
+}
+.swipe-btn.nope:hover { background: #FEF2F2; box-shadow: 0 8px 24px rgba(239,68,68,0.25); }
+
+.swipe-btn.like {
+  background: linear-gradient(135deg, #2563EB, #60A5FA);
+  color: white;
+  box-shadow: 0 6px 20px rgba(37,99,235,0.25);
+  width: 76px; height: 76px;
+  font-size: 1.6rem;
+}
+.swipe-btn.like:hover { box-shadow: 0 10px 30px rgba(37,99,235,0.30); }
+
+.swipe-hint-row {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 0.4rem;
+}
+.swipe-hint {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #C4B5D0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+.no-more-cards {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  z-index: 0;
+  background: linear-gradient(135deg, #F9F5FF, #FFF0F8);
+  border-radius: 28px;
+  border: 1.5px dashed #DDD0F5;
+}
+
+.no-more-cards-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease infinite;
+}
+
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* ── Match modal ─────────────────────────────────────────── */
+.match-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,10,50,0.6);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.match-modal-overlay.show { display: flex; }
+
+.match-modal-card {
+  background: white;
+  border-radius: 28px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  max-width: 360px;
+  width: 90%;
+  animation: matchPop .45s cubic-bezier(.34,1.56,.64,1) both;
+  box-shadow: 0 20px 60px rgba(150,50,200,0.25);
+}
+
+@keyframes matchPop {
+  from { transform: scale(.7); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+
+.match-modal-emoji { font-size: 3.5rem; margin-bottom: 0.75rem; animation: spin 1s ease; }
+@keyframes spin { from { transform: rotate(-15deg) scale(.5); } to { transform: rotate(0) scale(1); } }
+
+.match-modal-card h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg,#1D4ED8,#38BDF8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.match-modal-card p {
+  font-size: 0.9rem;
+  color: #7A6A8A;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+</style>
+
+<div class="swipe-page">
+  <div class="swipe-header">
+    <h1>Find Roommates</h1>
+    <p>Swipe right to connect · left to skip</p>
+    <div class="swipe-header-actions">
+      <a href="{{ url_for('roommate.matches') }}" class="btn btn-outline btn-sm">
+        <i class="fas fa-heart"></i> My Matches
+      </a>
+      <a href="{{ url_for('roommate.quiz') }}" class="btn btn-outline btn-sm">
+        <i class="fas fa-sliders"></i> Edit Profile
+      </a>
+    </div>
+  </div>
+
+  <div class="tinder-wrapper" id="tinder-wrapper">
+    {# Empty state underneath cards #}
+    <div class="no-more-cards">
+      <div class="no-more-cards-icon"><i class="fas fa-users"></i></div>
+      <h3 style="font-family:'Outfit',sans-serif;font-size:1.2rem;font-weight:800;color:#3A2A4A;margin-bottom:0.4rem;">You've seen everyone!</h3>
+      <p style="font-size:0.85rem;color:#475569;margin-bottom:1.25rem;">New students join daily — come back soon.</p>
+      <a href="{{ url_for('roommate.matches') }}" class="btn btn-primary btn-sm">View My Matches</a>
+    </div>
+
+    {% set gradients = ['grad-a','grad-b','grad-c','grad-d','grad-e'] %}
+    {% for candidate in candidates %}
+    <div class="tinder-card" data-id="{{ candidate.id }}" style="z-index: {{ candidates|length - loop.index0 + 2 }}">
+
+      <div class="card-hero {{ gradients[loop.index0 % gradients|length] }}">
+        <div class="compat-chip">
+          {{ candidate.compatibility }}% match
+        </div>
+        <div class="avatar-ring">{{ candidate.full_name.split()[0][0] }}</div>
+      </div>
+
+      <div class="card-body-r">
+        <div>
+          <div class="card-name">{{ candidate.full_name }}</div>
+          <div class="card-meta">{{ candidate.course }} · Year {{ candidate.year }}</div>
+        </div>
+
+        {% if candidate.highlights %}
+        <div class="highlights-box">
+          <h6>Shared preferences</h6>
+          <ul style="margin:0;padding-left:1.1rem;">
+            {% for hl in candidate.highlights %}
+            <li>{{ hl }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <div class="trait-grid">
+          <div class="trait-chip">
+            <div class="trait-chip-label">Sleep</div>
+            <div class="trait-chip-value">{% if candidate.q4 <= 2 %}Early Bird{% else %}Night Owl{% endif %}</div>
+          </div>
+          <div class="trait-chip">
+            <div class="trait-chip-label">Personality</div>
+            <div class="trait-chip-value">{% if candidate.q6 <= 2 %}Introvert{% else %}Extrovert{% endif %}</div>
+          </div>
+          <div class="trait-chip">
+            <div class="trait-chip-label">Visitors</div>
+            <div class="trait-chip-value">{% if candidate.q7 <= 2 %}Rarely{% else %}Often{% endif %}</div>
+          </div>
+          <div class="trait-chip">
+            <div class="trait-chip-label">Noise</div>
+            <div class="trait-chip-value">{% if candidate.q8 == 1 and candidate.q9 <= 2 %}🤫 Quiet{% else %}🎵 Moderate{% endif %}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {# Swipe buttons #}
+  <div class="swipe-btns" id="swipe-btns">
+    <button class="swipe-btn nope" onclick="triggerSwipe('left')" id="nope-btn" title="Skip">
+      <i class="fas fa-times"></i>
+    </button>
+    <button class="swipe-btn like" onclick="triggerSwipe('right')" id="like-btn" title="Like">
+      <i class="fas fa-heart"></i>
+    </button>
+  </div>
+  <div class="swipe-hint-row">
+    <span class="swipe-hint">← Skip</span>
+    <span class="swipe-hint">Like →</span>
+  </div>
+</div>
+
+{# Match Modal #}
+<div class="match-modal-overlay" id="matchOverlay">
+  <div class="match-modal-card">
+    <div class="match-modal-emoji">🎊</div>
+    <h2>It's a Match!</h2>
+    <p>You and <strong id="match-name"></strong> both liked each other. Time to say hi!</p>
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+      <button onclick="closeMatchModal()" class="btn btn-primary btn-full" style="background:var(--abode-lavender);color:var(--text-3);border:none;font-weight:800;font-size:1.1rem;padding:12px;">
+        <i class="fas fa-check"></i> Awesome!
+      </button>
+      <button onclick="document.getElementById('matchOverlay').classList.remove('show')"
+              style="background:none;border:1.5px solid #E5D5F0;border-radius:12px;padding:.65rem;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;color:#9E8AA0;cursor:pointer;">
+        Keep Swiping
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let cards = Array.from(document.querySelectorAll('.tinder-card'));
+const btns = document.getElementById('swipe-btns');
+
+function updateStack() {
+  const active = cards.filter(c => !c.classList.contains('removed') && !c.classList.contains('removed-left'));
+  if (active.length === 0) {
+    btns.style.display = 'none';
+    return;
+  }
+  active.forEach(function(card, i) {
+    card.style.zIndex = active.length - i + 2;
+    card.style.transition = 'transform .3s ease, box-shadow .3s ease';
+    if (i === 0) {
+      card.style.transform = 'scale(1) translateY(0)';
+    } else if (i === 1) {
+      card.style.transform = 'scale(.96) translateY(10px)';
+    } else {
+      card.style.transform = 'scale(.92) translateY(20px)';
+    }
+  });
+}
+
+updateStack();
+
+function triggerSwipe(action) {
+  const active = cards.filter(c => !c.classList.contains('removed') && !c.classList.contains('removed-left'));
+  if (active.length === 0) return;
+
+  const topCard = active[0];
+  const swipeeId = topCard.dataset.id;
+  const name = topCard.querySelector('.card-name').innerText;
+
+  // Bounce animation before fly-off
+  topCard.style.transition = 'transform .12s ease';
+  topCard.style.transform = action === 'right'
+    ? 'scale(1.04) rotate(2deg)'
+    : 'scale(1.04) rotate(-2deg)';
+
+  setTimeout(function() {
+    topCard.classList.add(action === 'right' ? 'removed' : 'removed-left');
+    topCard.style.transition = 'transform .38s cubic-bezier(.4,0,.2,1), opacity .35s ease';
+    setTimeout(updateStack, 100);
+  }, 100);
+
+  fetch("{{ url_for('roommate.swipe_action') }}", {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ swipee_id: swipeeId, action: action })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.match) {
+      document.getElementById('match-name').innerText = name;
+
+      document.getElementById('matchOverlay').classList.add('show');
+    }
+  });
+}
+
+// Keyboard swipe support
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowLeft')  triggerSwipe('left');
+  if (e.key === 'ArrowRight') triggerSwipe('right');
+});
+</script>
+
+{% endblock %}

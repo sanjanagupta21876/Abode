@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to SmartHostel — Setup Your Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="ob-body">
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+<div class="ob-flash-wrap">{% for category, message in messages %}
+    <div class="alert alert-{{ category }}"><i class="fas fa-circle-check"></i> {{ message }}</div>
+{% endfor %}</div>{% endif %}{% endwith %}
+
+<div class="ob-wrapper">
+
+    <!-- Brand -->
+    <div class="ob-brand">
+        <div class="ob-brand-icon"><i class="fas fa-building-columns"></i></div>
+        <span class="ob-brand-name">SmartHostel</span>
+    </div>
+
+    <!-- Stepper -->
+    <div class="ob-stepper">
+        <div class="ob-step {% if step >= 1 %}active{% endif %} {% if step > 1 %}done{% endif %}">
+            <div class="ob-step-circle">
+                {% if step > 1 %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-user"></i>{% endif %}
+            </div>
+            <div class="ob-step-label">Basic Details</div>
+        </div>
+        <div class="ob-step-line {% if step > 1 %}done{% endif %}"></div>
+        <div class="ob-step {% if step >= 2 %}active{% endif %} {% if step > 2 %}done{% endif %}">
+            <div class="ob-step-circle">
+                {% if step > 2 %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-leaf"></i>{% endif %}
+            </div>
+            <div class="ob-step-label">Health Info</div>
+        </div>
+        <div class="ob-step-line {% if step > 2 %}done{% endif %}"></div>
+        <div class="ob-step {% if step >= 3 %}active{% endif %}">
+            <div class="ob-step-circle">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="ob-step-label">Preferences</div>
+        </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="ob-progress-bar">
+        <div class="ob-progress-fill" style="width: {{ (step / 3 * 100)|int }}%"></div>
+    </div>
+
+    <!-- ================================================================
+         STEP 1 — Basic Details
+         ================================================================ -->
+    {% if step == 1 %}
+    <div class="ob-card fade-in">
+        <div class="ob-card-header">
+            <div class="ob-step-icon blue"><i class="fas fa-user-circle"></i></div>
+            <div>
+                <h2 class="ob-card-title">Tell us about yourself</h2>
+                <p class="ob-card-sub">Step 1 of 3 — Verify and complete your basic details</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('onboarding.step1') }}" class="ob-form">
+            <div class="ob-welcome-banner">
+                <i class="fas fa-wave-square"></i>
+                Welcome, <strong>{{ session.full_name }}</strong>! Let's get your hostel profile ready.
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-id-card"></i> Roll Number</label>
+                    <input type="text" name="roll_number"
+                           value="{{ pre.roll_number or '' }}"
+                           placeholder="e.g. CS2024001" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-graduation-cap"></i> Course / Programme</label>
+                    <select name="course">
+                        <option value="">Select your course…</option>
+                        {% for c in ['B.Tech CSE','B.Tech ECE','B.Tech ME','B.Tech Civil','B.Tech EE',
+                                     'M.Tech CSE','M.Tech ECE','MCA','MBA','B.Sc','M.Sc','BBA','BCA','PhD'] %}
+                        <option value="{{ c }}" {% if pre.course == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                        {% if pre.course and pre.course not in ['B.Tech CSE','B.Tech ECE','B.Tech ME','B.Tech Civil','B.Tech EE',
+                                     'M.Tech CSE','M.Tech ECE','MCA','MBA','B.Sc','M.Sc','BBA','BCA','PhD'] %}
+                        <option value="{{ pre.course }}" selected>{{ pre.course }}</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-alt"></i> Year of Study</label>
+                    <select name="year">
+                        {% for y in [1,2,3,4,5] %}
+                        <option value="{{ y }}" {% if pre.year|string == y|string %}selected{% endif %}>Year {{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-bed"></i> Room Number</label>
+                    <input type="text" name="room_number"
+                           value="{{ pre.room_number or '' }}"
+                           placeholder="e.g. A-101">
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-phone"></i> Phone Number</label>
+                <input type="tel" name="phone"
+                       value="{{ pre.phone or '' }}"
+                       placeholder="10-digit mobile number">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-cake-candles"></i> Date of Birth</label>
+                    <input type="date" name="birth_date" value="{{ pre.birth_date or '' }}">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-bed"></i> Room Type</label>
+                    <select name="room_type">
+                        <option value="">Select room type…</option>
+                        {% for t in ['Single','Double Sharing','Double Sharing AC','Triple Sharing','Triple Sharing AC'] %}
+                        <option value="{{ t }}" {% if pre.room_type == t %}selected{% endif %}>{{ t }}</option>
+                        {% endfor %}
+                        {% if pre.room_type and pre.room_type not in ['Single','Double Sharing','Double Sharing AC','Triple Sharing','Triple Sharing AC'] %}
+                        <option value="{{ pre.room_type }}" selected>{{ pre.room_type }}</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="ob-btn-row">
+                <div></div><!-- spacer -->
+                <button type="submit" class="btn btn-primary btn-lg ob-btn-next">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ================================================================
+         STEP 2 — Allergy Information
+         ================================================================ -->
+    {% elif step == 2 %}
+    <div class="ob-card fade-in">
+        <div class="ob-card-header">
+            <div class="ob-step-icon green"><i class="fas fa-leaf"></i></div>
+            <div>
+                <h2 class="ob-card-title">Health &amp; Allergy Information</h2>
+                <p class="ob-card-sub">Step 2 of 3 — Help us keep you safe and healthy</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('onboarding.step2') }}" class="ob-form">
+            <div class="ob-allergy-info">
+                <i class="fas fa-shield-heart"></i>
+                <p>This information helps the hostel kitchen and management plan meals safely for you.</p>
+            </div>
+
+            <div class="form-group">
+                <label style="font-size:.95rem;font-weight:600;">
+                    <i class="fas fa-triangle-exclamation" style="color:var(--orange);"></i>
+                    Do you have any allergies?
+                </label>
+                <div class="ob-allergy-wrap">
+                    <i class="fas fa-magnifying-glass ob-allergy-icon"></i>
+                    <input
+                        type="text"
+                        name="allergies"
+                        id="allergyInput"
+                        value="{{ pre.allergies or '' }}"
+                        placeholder="e.g., milk, peanuts, dust (leave blank if none)"
+                        autocomplete="off"
+                        style="padding-left: 2.5rem;"
+                    >
+                </div>
+                <span class="form-hint">
+                    <i class="fas fa-circle-info"></i>
+                    Separate multiple allergies with commas. Leave blank if you have none.
+                </span>
+            </div>
+
+            <!-- Quick-select chips -->
+            <div style="margin-top:.5rem;">
+                <p style="font-size:.78rem;color:var(--text-3);margin-bottom:.5rem;">Quick select common allergies:</p>
+                <div class="ob-chip-row">
+                    {% for allergen in ['Milk/Dairy','Peanuts','Tree Nuts','Shellfish','Fish','Eggs','Wheat/Gluten','Soy','Dust','Pollen','None'] %}
+                    <button type="button" class="ob-chip" onclick="addAllergy('{{ allergen }}')">{{ allergen }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="ob-btn-row">
+                <a href="{{ url_for('onboarding.step1') }}" class="btn btn-outline btn-lg">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg ob-btn-next">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ================================================================
+         STEP 3 — Roommate Preferences Quiz
+         ================================================================ -->
+    {% elif step == 3 %}
+    <div class="ob-card ob-card-wide fade-in">
+        <div class="ob-card-header">
+            <div class="ob-step-icon red"><i class="fas fa-heart"></i></div>
+            <div>
+                <h2 class="ob-card-title">Roommate Preferences</h2>
+                <p class="ob-card-sub">Step 3 of 3 — Help us find your ideal roommate match</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('onboarding.step3') }}" class="ob-form" id="quizForm">
+
+            <!-- Q1: Sleep Schedule -->
+            <div class="ob-quiz-section">
+                <div class="ob-quiz-label">
+                    <div class="ob-quiz-num">1</div>
+                    <div>
+                        <div class="ob-quiz-title"><i class="fas fa-moon"></i> Sleep Schedule</div>
+                        <div class="ob-quiz-sub">When do you usually go to sleep?</div>
+                    </div>
+                </div>
+                <input type="hidden" name="q1" id="q1" value="{{ pre.get('q1', 2) }}">
+                <div class="ob-quiz-grid">
+                    <div class="ob-quiz-card {% if pre.get('q1', 2) == 1 %}selected{% endif %}" onclick="selectCard('q1',1,this)">
+                        <i class="fas fa-sun"></i><span>Early Sleeper</span><small>Before 10 PM</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q1', 2) == 2 %}selected{% endif %}" onclick="selectCard('q1',2,this)">
+                        <i class="fas fa-cloud-moon"></i><span>By Midnight</span><small>10 PM – 12 AM</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q1', 2) == 3 %}selected{% endif %}" onclick="selectCard('q1',3,this)">
+                        <i class="fas fa-moon"></i><span>Night Owl</span><small>12 AM – 2 AM</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q1', 2) == 4 %}selected{% endif %}" onclick="selectCard('q1',4,this)">
+                        <i class="fas fa-star"></i><span>Very Late</span><small>After 2 AM</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q2: Study Environment -->
+            <div class="ob-quiz-section">
+                <div class="ob-quiz-label">
+                    <div class="ob-quiz-num">2</div>
+                    <div>
+                        <div class="ob-quiz-title"><i class="fas fa-book-open"></i> Study Environment</div>
+                        <div class="ob-quiz-sub">What's your preferred environment when studying?</div>
+                    </div>
+                </div>
+                <input type="hidden" name="q2" id="q2" value="{{ pre.get('q2', 2) }}">
+                <div class="ob-quiz-grid">
+                    <div class="ob-quiz-card {% if pre.get('q2', 2) == 1 %}selected{% endif %}" onclick="selectCard('q2',1,this)">
+                        <i class="fas fa-volume-xmark"></i><span>Complete Silence</span><small>Pin-drop quiet</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q2', 2) == 2 %}selected{% endif %}" onclick="selectCard('q2',2,this)">
+                        <i class="fas fa-comment-slash"></i><span>Mostly Quiet</span><small>Minimal noise</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q2', 2) == 3 %}selected{% endif %}" onclick="selectCard('q2',3,this)">
+                        <i class="fas fa-music"></i><span>Music OK</span><small>Low background</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q2', 2) == 4 %}selected{% endif %}" onclick="selectCard('q2',4,this)">
+                        <i class="fas fa-volume-high"></i><span>Lively is Fine</span><small>Any noise level</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q3: Cleanliness -->
+            <div class="ob-quiz-section">
+                <div class="ob-quiz-label">
+                    <div class="ob-quiz-num">3</div>
+                    <div>
+                        <div class="ob-quiz-title"><i class="fas fa-broom"></i> Cleanliness Level</div>
+                        <div class="ob-quiz-sub">How would you describe your cleanliness habits?</div>
+                    </div>
+                </div>
+                <input type="hidden" name="q3" id="q3" value="{{ pre.get('q3', 2) }}">
+                <div class="ob-quiz-grid">
+                    <div class="ob-quiz-card {% if pre.get('q3', 2) == 1 %}selected{% endif %}" onclick="selectCard('q3',1,this)">
+                        <i class="fas fa-couch"></i><span>Relaxed</span><small>Things can be messy</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q3', 2) == 2 %}selected{% endif %}" onclick="selectCard('q3',2,this)">
+                        <i class="fas fa-equals"></i><span>Moderate</span><small>Reasonably tidy</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q3', 2) == 3 %}selected{% endif %}" onclick="selectCard('q3',3,this)">
+                        <i class="fas fa-broom"></i><span>Tidy</span><small>Usually kept clean</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q3', 2) == 4 %}selected{% endif %}" onclick="selectCard('q3',4,this)">
+                        <i class="fas fa-star"></i><span>Very Neat</span><small>Spotlessly clean</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q4: Social Preference -->
+            <div class="ob-quiz-section">
+                <div class="ob-quiz-label">
+                    <div class="ob-quiz-num">4</div>
+                    <div>
+                        <div class="ob-quiz-title"><i class="fas fa-users"></i> Social Preference</div>
+                        <div class="ob-quiz-sub">How would you describe your social personality?</div>
+                    </div>
+                </div>
+                <input type="hidden" name="q4" id="q4" value="{{ pre.get('q4', 2) }}">
+                <div class="ob-quiz-grid">
+                    <div class="ob-quiz-card {% if pre.get('q4', 2) == 1 %}selected{% endif %}" onclick="selectCard('q4',1,this)">
+                        <i class="fas fa-user-secret"></i><span>Strong Introvert</span><small>Love my alone time</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q4', 2) == 2 %}selected{% endif %}" onclick="selectCard('q4',2,this)">
+                        <i class="fas fa-user"></i><span>Slight Introvert</span><small>Mostly keep to myself</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q4', 2) == 3 %}selected{% endif %}" onclick="selectCard('q4',3,this)">
+                        <i class="fas fa-user-friends"></i><span>Slight Extrovert</span><small>Enjoy socialising</small>
+                    </div>
+                    <div class="ob-quiz-card {% if pre.get('q4', 2) == 4 %}selected{% endif %}" onclick="selectCard('q4',4,this)">
+                        <i class="fas fa-people-group"></i><span>Full Extrovert</span><small>The more the merrier</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ob-btn-row">
+                <a href="{{ url_for('onboarding.step2') }}" class="btn btn-outline btn-lg">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg ob-btn-next ob-btn-finish">
+                    <i class="fas fa-check-circle"></i> Finish Setup
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <p style="text-align:center;font-size:.75rem;color:var(--text-3);margin-top:1rem;">
+        You can always update these in your profile later.
+    </p>
+</div>
+
+<script>
+// Selectable quiz cards — update hidden input on click
+function selectCard(questionId, value, cardEl) {
+    // Deselect siblings
+    const grid = cardEl.closest('.ob-quiz-grid');
+    grid.querySelectorAll('.ob-quiz-card').forEach(c => c.classList.remove('selected'));
+    // Select clicked
+    cardEl.classList.add('selected');
+    // Set hidden input
+    document.getElementById(questionId).value = value;
+}
+
+// Allergy chip quick-add
+function addAllergy(allergen) {
+    const input = document.getElementById('allergyInput');
+    if (!input) return;
+    if (allergen === 'None') {
+        input.value = 'None';
+        return;
+    }
+    const current = input.value.trim();
+    if (!current || current.toLowerCase() === 'none') {
+        input.value = allergen;
+    } else {
+        // Don't duplicate
+        const parts = current.split(',').map(p => p.trim().toLowerCase());
+        if (!parts.includes(allergen.toLowerCase())) {
+            input.value = current + ', ' + allergen;
+        }
+    }
+    input.focus();
+}
+
+// Quiz form validation — ensure all questions answered
+const quizForm = document.getElementById('quizForm');
+if (quizForm) {
+    quizForm.addEventListener('submit', function(e) {
+        const questions = ['q1','q2','q3','q4'];
+        for (const q of questions) {
+            const inp = document.getElementById(q);
+            if (!inp || !inp.value) {
+                e.preventDefault();
+                alert('Please answer all four questions before finishing.');
+                return;
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Today's Menu — Abode{% endblock %}
+
+{% block content %}
+<div class="abode-menu-page">
+  <div class="abode-menu-content">
+
+    {# Header #}
+    <div class="abode-menu-header fade-in">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="font-size:1.75rem; font-weight:900; letter-spacing:-0.03em;">Today's Menu 🍽️</h1>
+          <p style="font-size:0.88rem; color:var(--text-3); margin-top:0.25rem; font-weight:500;">
+            Fresh, nutritious meals served every day 🌿
+          </p>
+        </div>
+        {% if session.role == 'warden' %}
+        <a href="{{ url_for('menu.edit_menu') }}" class="abode-btn abode-btn-primary">
+          <i class="fas fa-pen-to-square"></i> Edit Menu
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Today's meal cards (top row) ── #}
+    {# today_day is passed from the backend as e.g. 'Saturday' #}
+    {% set today_meals = weekly_menu.get(today_day, {}) %}
+    <div class="abode-meal-cards">
+
+      {# Breakfast #}
+      <div class="abode-meal-card breakfast fade-in fade-in-1">
+        <span class="abode-meal-icon"><i class="fas fa-mug-hot"></i></span>
+        <div class="abode-meal-name">Breakfast</div>
+        {% set b = today_meals.get('Breakfast', {}) %}
+        <div class="abode-meal-items">{{ b['items'] if b and b.get('items') != 'Not set' else 'Menu not available' }}</div>
+        {% if b and b.get('calories') %}<span class="abode-meal-cal"><i class="fas fa-fire-flame-curved"></i> {{ b['calories'] }} kcal</span>{% endif %}
+      </div>
+
+      {# Lunch #}
+      <div class="abode-meal-card lunch fade-in fade-in-2">
+        <span class="abode-meal-icon"><i class="fas fa-utensils"></i></span>
+        <div class="abode-meal-name">Lunch</div>
+        {% set l = today_meals.get('Lunch', {}) %}
+        <div class="abode-meal-items">{{ l['items'] if l and l.get('items') != 'Not set' else 'Menu not available' }}</div>
+        {% if l and l.get('calories') %}<span class="abode-meal-cal"><i class="fas fa-fire-flame-curved"></i> {{ l['calories'] }} kcal</span>{% endif %}
+      </div>
+
+      {# Snacks #}
+      <div class="abode-meal-card snacks fade-in fade-in-3">
+        <span class="abode-meal-icon"><i class="fas fa-cookie-bite"></i></span>
+        <div class="abode-meal-name">Snacks</div>
+        {% set s = today_meals.get('Snacks', {}) %}
+        <div class="abode-meal-items">{{ s['items'] if s and s.get('items') != 'Not set' else 'Menu not available' }}</div>
+        {% if s and s.get('calories') %}<span class="abode-meal-cal"><i class="fas fa-fire-flame-curved"></i> {{ s['calories'] }} kcal</span>{% endif %}
+      </div>
+
+      {# Dinner #}
+      <div class="abode-meal-card dinner fade-in fade-in-4">
+        <span class="abode-meal-icon"><i class="fas fa-bowl-food"></i></span>
+        <div class="abode-meal-name">Dinner</div>
+        {% set d = today_meals.get('Dinner', {}) %}
+        <div class="abode-meal-items">{{ d['items'] if d and d.get('items') != 'Not set' else 'Menu not available' }}</div>
+        {% if d and d.get('calories') %}<span class="abode-meal-cal"><i class="fas fa-fire-flame-curved"></i> {{ d['calories'] }} kcal</span>{% endif %}
+      </div>
+    </div>
+
+
+    {# ── Full weekly menu table ── #}
+    <div style="margin-top:1.5rem; margin-bottom:1rem; position:relative; overflow:hidden;" class="fade-in">
+      <h2 style="font-size:1.15rem; font-weight:800; color:var(--text); letter-spacing:-0.02em;">
+        📆 Weekly Schedule
+      </h2>
+
+      <!-- Stickers -->
+      <div class="menu-sticker" style="top: -10px; right: 10%; animation-delay: 0s;">🍕</div>
+      <div class="menu-sticker" style="top: 40px; left: 5%; animation-delay: 1s;">🥪</div>
+      <div class="menu-sticker" style="bottom: 10px; right: 5%; animation-delay: 2s;">🍛</div>
+    </div>
+
+    <div style="background:white; border:1px solid var(--border); border-radius:20px; padding:1.5rem; box-shadow:var(--shadow-sm); overflow-x:auto;" class="fade-in fade-in-2">
+      <table class="abode-data-table" style="border-collapse: separate; border-spacing: 0;">
+        <thead>
+          <tr>
+            <th style="min-width:110px; border-bottom:1px solid var(--border); padding:1rem;"><i class="fas fa-calendar-days"></i> Day</th>
+            {% for meal in meal_names %}
+            <th style="min-width:140px; border-bottom:1px solid var(--border); padding:1rem;">
+              {% if meal == 'Breakfast' %}☀️
+              {% elif meal == 'Lunch' %}🌤️
+              {% elif meal == 'Snacks' %}🍪
+              {% elif meal == 'Dinner' %}🌙
+              {% endif %}
+              {{ meal }}
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for day in day_names %}
+          <tr>
+            <td style="font-weight:700; background:{% if day == today_day %}var(--abode-mint){% else %}var(--bg){% endif %}; border-bottom:1px solid #F0E5E9; padding:1rem;">
+              {{ day }}{% if day == today_day %} 📍{% endif %}
+            </td>
+            {% for meal in meal_names %}
+            {% set cell = weekly_menu.get(day, {}).get(meal, {}) %}
+            <td style="border-bottom:1px solid #F0E5E9; padding:1rem;">
+              {% if cell and cell['items'] != 'Not set' %}
+              <div style="font-size:0.88rem; font-weight:600; color:var(--text); margin-bottom:0.25rem;">{{ cell['items'] }}</div>
+              {% if cell['calories'] %}
+              <div style="font-size:0.75rem; font-weight:700; color:var(--text-3);">
+                <span style="color:#F59E0B">🔥</span> {{ cell['calories'] }} kcal
+              </div>
+              {% endif %}
+              {% else %}
+              <span style="font-size:0.8rem; color:var(--text-3); opacity:0.5;">-</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>{# /abode-menu-content #}
+</div>{# /abode-menu-page #}
+
+<style>
+.abode-meal-card {
+  flex: 1;
+  min-width: 140px;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  background: #E6F4FC;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.abode-meal-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
+
+.abode-meal-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-top: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.abode-meal-icon {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #006EBB;
+  font-size: 1rem;
+}
+
+
+/* Ensure the grid wraps nicely */
+.abode-meal-cards {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+</style>
+
+{% endblock %}

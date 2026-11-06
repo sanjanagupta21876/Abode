@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Student Profiles — SmartHostel{% endblock %}
+{% block content %}
+
+<div class="page-header fade-in">
+    <div class="page-header-left">
+        <div class="breadcrumb"><i class="fas fa-user-graduate"></i> Students <i class="fas fa-chevron-right"></i> Profiles</div>
+        <h1>Student Health &amp; Roommate Profiles</h1>
+        <p>View allergy information and roommate preferences for all students.</p>
+    </div>
+    <div class="page-header-right">
+        <a href="{{ url_for('warden.students') }}" class="btn btn-outline btn-sm"><i class="fas fa-list"></i> All Students</a>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card fade-in" style="margin-bottom:1.25rem;">
+    <div class="card-body">
+        <form method="GET" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end;">
+            <div class="form-group" style="flex:1;min-width:180px;">
+                <label><i class="fas fa-leaf"></i> Filter by Allergy</label>
+                <input type="text" name="allergy" value="{{ allergy_filter }}"
+                       placeholder="e.g. peanuts, milk…" style="padding:.5rem .85rem;">
+            </div>
+            <div class="form-group" style="min-width:170px;">
+                <label><i class="fas fa-bed"></i> Sleep Schedule</label>
+                <select name="sleep" style="padding:.5rem .85rem;">
+                    <option value="">All</option>
+                    <option value="1" {% if sleep_filter == '1' %}selected{% endif %}>Early Sleeper (before 10 PM)</option>
+                    <option value="2" {% if sleep_filter == '2' %}selected{% endif %}>By Midnight</option>
+                    <option value="3" {% if sleep_filter == '3' %}selected{% endif %}>Night Owl (12–2 AM)</option>
+                    <option value="4" {% if sleep_filter == '4' %}selected{% endif %}>Very Late (after 2 AM)</option>
+                </select>
+            </div>
+            <div class="form-group" style="min-width:170px;">
+                <label><i class="fas fa-users"></i> Social Preference</label>
+                <select name="social" style="padding:.5rem .85rem;">
+                    <option value="">All</option>
+                    <option value="1" {% if social_filter == '1' %}selected{% endif %}>Strong Introvert</option>
+                    <option value="2" {% if social_filter == '2' %}selected{% endif %}>Slight Introvert</option>
+                    <option value="3" {% if social_filter == '3' %}selected{% endif %}>Slight Extrovert</option>
+                    <option value="4" {% if social_filter == '4' %}selected{% endif %}>Full Extrovert</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:.5rem;">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter"></i> Apply</button>
+                <a href="{{ url_for('warden.student_profiles') }}" class="btn btn-outline btn-sm"><i class="fas fa-xmark"></i> Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Profiles Table -->
+{% if profiles %}
+<div class="card fade-in fade-in-1">
+    <div class="card-header">
+        <h3><i class="fas fa-id-card"></i> Student Profiles <span style="font-size:.75rem;font-weight:400;color:var(--text-3);">({{ profiles|length }} students)</span></h3>
+    </div>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Roll No.</th>
+                    <th>Room</th>
+                    <th><i class="fas fa-leaf" style="color:var(--green);"></i> Allergies</th>
+                    <th><i class="fas fa-bed"></i> Sleep</th>
+                    <th><i class="fas fa-book"></i> Study Env.</th>
+                    <th><i class="fas fa-broom"></i> Cleanliness</th>
+                    <th><i class="fas fa-users"></i> Social</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set sleep_labels  = {1:'Early (pre 10PM)', 2:'By Midnight', 3:'Night Owl', 4:'Very Late'} %}
+                {% set study_labels  = {1:'Complete Silence', 2:'Mostly Quiet', 3:'Music OK', 4:'Lively OK'} %}
+                {% set clean_labels  = {1:'Relaxed', 2:'Moderate', 3:'Tidy', 4:'Very Neat'} %}
+                {% set social_labels = {1:'Strong Introvert', 2:'Slight Introvert', 3:'Slight Extrovert', 4:'Full Extrovert'} %}
+                {% for p in profiles %}
+                <tr>
+                    <td style="font-weight:600;color:var(--text);">
+                        <div style="display:flex;align-items:center;gap:.5rem;">
+                            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#60A5FA);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;">{{ p.full_name[:1].upper() }}</div>
+                            {{ p.full_name }}
+                        </div>
+                    </td>
+                    <td>{{ p.roll_number or '—' }}</td>
+                    <td>{{ p.room_number or '—' }}</td>
+                    <td>
+                        {% if p.allergies and p.allergies != 'None' and p.allergies != 'none' %}
+                            <span class="allergy-tag-warn"><i class="fas fa-triangle-exclamation"></i> {{ p.allergies }}</span>
+                        {% else %}
+                            <span class="allergy-tag-ok"><i class="fas fa-check"></i> None</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ sleep_labels.get(p.sleep_schedule, '—') }}</td>
+                    <td>{{ study_labels.get(p.study_env, '—') }}</td>
+                    <td>{{ clean_labels.get(p.cleanliness, '—') }}</td>
+                    <td>{{ social_labels.get(p.social_pref, '—') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="empty-state fade-in">
+    <i class="fas fa-users-slash" style="font-size:2.5rem;color:var(--text-3);display:block;margin-bottom:.75rem;"></i>
+    <p>No student profiles match your filters.</p>
+    <a href="{{ url_for('warden.student_profiles') }}" class="btn btn-outline btn-sm" style="margin-top:.75rem;">Clear filters</a>
+</div>
+{% endif %}
+
+{% endblock %}

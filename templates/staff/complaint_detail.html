@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}Complaint #{{ complaint.id }} — Staff Portal{% endblock %}
+{% block content %}
+<style>
+.complaint-detail-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(15,39,71,0.08);
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+}
+.cd-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+.cd-title-wrap h2 {
+    color: var(--text-dark);
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 0.4rem;
+}
+.cd-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    color: var(--text-3);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.cd-body {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+@media (max-width: 768px) {
+    .cd-body { grid-template-columns: 1fr; }
+}
+.cd-section {
+    margin-bottom: 1.5rem;
+}
+.cd-section-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.cd-text {
+    color: var(--text-dark);
+    line-height: 1.6;
+    font-size: 1.05rem;
+    background: var(--bg);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+.cd-info-box {
+    background: #FAFBFC;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid #E2E8F0;
+}
+.cd-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed #E2E8F0;
+}
+.cd-info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.cd-info-label {
+    color: var(--text-3);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.cd-info-val {
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: right;
+}
+.action-box {
+    background: #F8FAFC;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+.action-box h3 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+.ab-textarea {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1.5px solid #CBD5E1;
+    font-family: inherit;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    resize: vertical;
+}
+.ab-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+.ab-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.priority-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.p-urgent { background: #EF4444; color: white; }
+.p-high { background: rgba(249, 115, 22, 0.15); color: #c2410c; border: 1px solid rgba(249, 115, 22, 0.3); }
+.p-normal { background: rgba(148, 163, 184, 0.15); color: #475569; border: 1px solid rgba(148, 163, 184, 0.3); }
+</style>
+
+<div class="page-header fade-in">
+    <div class="page-header-left">
+        <div class="breadcrumb">
+            <a href="{{ url_for('staff.dashboard') }}" style="color:var(--text-3); text-decoration:none;"><i class="fas fa-arrow-left"></i> Dashboard</a> 
+            <span style="margin:0 0.5rem;">/</span> 
+            Complaint #{{ complaint.id }}
+        </div>
+    </div>
+</div>
+
+<div class="complaint-detail-card fade-in">
+    <div class="cd-header">
+        <div class="cd-title-wrap">
+            <h2>{{ complaint.title }}</h2>
+            <div class="cd-meta">
+                <span><i class="far fa-clock"></i> {{ complaint.created_at|datetimefmt }}</span>
+                {% if complaint.priority == 'urgent' %}
+                    <span class="priority-badge p-urgent"><i class="fas fa-triangle-exclamation"></i> URGENT</span>
+                {% elif complaint.priority == 'high' %}
+                    <span class="priority-badge p-high">HIGH PRIORITY</span>
+                {% else %}
+                    <span class="priority-badge p-normal">NORMAL PRIORITY</span>
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <span class="badge-status {{ 'green' if complaint.status == 'resolved' else 'yellow' if complaint.status in ['pending', 'assigned', 'in_progress', 'unresolved'] else 'red' }}" style="font-size: 0.95rem; padding: 0.4rem 1rem;">
+                {{ complaint.status|replace('_', ' ')|title }}
+            </span>
+        </div>
+    </div>
+
+    <div class="cd-body">
+        <!-- Left Col -->
+        <div>
+            <div class="cd-section">
+                <div class="cd-section-title"><i class="fas fa-align-left"></i> Description</div>
+                <div class="cd-text">
+                    {{ complaint.description|nl2br if complaint.description else 'No description provided.' }}
+                </div>
+            </div>
+            
+            {% if complaint.resolution_note %}
+            <div class="cd-section" style="margin-top: 2rem;">
+                <div class="cd-section-title" style="color: #22C55E;"><i class="fas fa-check-circle"></i> Resolution Note</div>
+                <div class="cd-text" style="background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.2);">
+                    {{ complaint.resolution_note|nl2br }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Right Col -->
+        <div>
+            <div class="cd-info-box">
+                <div class="cd-info-row">
+                    <div class="cd-info-label">Location</div>
+                    <div class="cd-info-val">
+                        {% if complaint.location %}
+                            {{ complaint.location }}
+                        {% elif complaint.room_number %}
+                            Room {{ complaint.room_number }}
+                        {% else %}
+                            <span class="text-muted">Not specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="cd-info-row">
+                    <div class="cd-info-label">Department</div>
+                    <div class="cd-info-val">{{ dept_emoji }} {{ dept_label }}</div>
+                </div>
+                <div class="cd-info-row">
+                    <div class="cd-info-label">Category</div>
+                    <div class="cd-info-val">{{ complaint.category|replace('_', ' ')|title }}</div>
+                </div>
+                <div class="cd-info-row">
+                    <div class="cd-info-label">Last Updated</div>
+                    <div class="cd-info-val">{{ complaint.updated_at|datetimefmt }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if complaint.status != 'resolved' %}
+<div class="action-box fade-in" style="animation-delay: 0.1s;">
+    <h3><i class="fas fa-tools" style="color:var(--primary); margin-right:0.5rem;"></i> Update Task Status</h3>
+    
+    <form method="POST" action="{{ url_for('staff.update_complaint', complaint_id=complaint.id) }}">
+        {% if complaint.status in ['pending', 'assigned', 'unresolved'] %}
+            <p style="color:var(--text-3); font-size:0.95rem; margin-bottom:1.5rem;">Mark this task as "In Progress" to let the student know you are working on it.</p>
+            <input type="hidden" name="status" value="in_progress">
+            <button type="submit" class="abode-btn abode-btn-primary"><i class="fas fa-play"></i> Start Work (In Progress)</button>
+        {% elif complaint.status == 'in_progress' %}
+            <p style="color:var(--text-3); font-size:0.95rem; margin-bottom:1rem;">Add a note explaining what you did, then mark as resolved.</p>
+            <textarea name="resolution_note" class="ab-textarea" rows="3" placeholder="E.g., Replaced the capacitor in the ceiling fan. Tested OK."></textarea>
+            <div class="ab-buttons">
+                <input type="hidden" name="status" value="resolved">
+                <button type="submit" class="abode-btn abode-btn-primary" style="background:#22C55E; border-color:#22C55E; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);"><i class="fas fa-check-double"></i> Mark as Resolved</button>
+            </div>
+        {% endif %}
+    </form>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block title %}Complaints - SmartHostel{% endblock %}
+{% block content %}
+<style>
+.priority-water-complaint {
+    background: rgba(239, 68, 68, 0.05) !important;
+    border-left: 5px solid #EF4444 !important;
+}
+.badge-priority {
+    background: #EF4444;
+    color: white !important;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    margin-right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.pulsing-red {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    animation: pulse-red-complaint 1.5s infinite;
+}
+@keyframes pulse-red-complaint {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+.tag-hot-water {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #EF4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    font-weight: 700;
+}
+.tag-cold-water {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #3B82F6 !important;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-weight: 700;
+}
+</style>
+<div class="page-header fade-in">
+    <div class="page-header-left">
+        <div class="breadcrumb"><i class="fas fa-clipboard-list"></i> Complaints</div>
+        <h1>{% if role == 'student' %}My Complaints{% else %}All Complaints{% endif %} 📋</h1>
+    </div>
+    {% if role == 'student' %}
+    <a href="{{ url_for('complaint.submit') }}" class="abode-btn abode-btn-primary"><i class="fas fa-plus"></i> New Complaint</a>
+    {% endif %}
+</div>
+
+{% if complaints %}
+<!-- Filter Toolbar -->
+<div class="dash-section fade-in" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; border-radius: 16px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border: 1.5px dashed var(--abode-lavender);">
+    <i class="fas fa-filter" style="color:var(--primary); flex-shrink:0;"></i> <strong style="color:var(--text-dark); font-size: 0.95rem; flex-shrink:0;">Filter by:</strong>
+    <select id="categoryFilter" onchange="filterComplaints()" class="select-sm" style="border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: 20px; font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--text-2); cursor: pointer; outline: none; transition: 0.2s; flex: 1; min-width: 120px;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+        <option value="">All Categories</option>
+        <option value="plumber">{{ 'plumber'|category_emoji }} Plumber</option>
+        <option value="hot_water">{{ 'hot_water'|category_emoji }} Hot Water</option>
+        <option value="cold_water">{{ 'cold_water'|category_emoji }} Cold Water</option>
+        <option value="electrician">{{ 'electrician'|category_emoji }} Electrician</option>
+        <option value="carpenter">{{ 'carpenter'|category_emoji }} Carpenter</option>
+        <option value="wifi">{{ 'wifi'|category_emoji }} WiFi</option>
+        <option value="other">{{ 'other'|category_emoji }} Other</option>
+    </select>
+    <select id="statusFilter" onchange="filterComplaints()" class="select-sm" style="border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: 20px; font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--text-2); cursor: pointer; outline: none; transition: 0.2s; flex: 1; min-width: 120px;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="in_progress">In Progress</option>
+        <option value="resolved">Resolved</option>
+        <option value="unresolved">Unresolved</option>
+    </select>
+    <select id="dateFilter" onchange="filterComplaints()" class="select-sm" style="border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: 20px; font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--text-2); cursor: pointer; outline: none; transition: 0.2s; flex: 1; min-width: 120px;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+        <option value="">All Time</option>
+        <option value="today">Today</option>
+        <option value="week">Last Week</option>
+        <option value="month">Last Month</option>
+    </select>
+</div>
+
+<div class="table-wrapper fade-in">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                {% if role == 'warden' %}<th>Student</th>{% endif %}
+                <th>Priority</th>
+                <th>Task & Location</th>
+                <th>Category</th>
+                {% if role == 'warden' %}<th>Assigned To</th>{% endif %}
+                <th>Status</th>
+                <th>Action</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in complaints %}
+            <tr class="complaint-row" data-category="{{ c.category|lower }}" data-status="{{ c.status|lower }}" data-date="{{ c.created_at }}">
+                <td style="font-family:monospace; font-weight:600; color:var(--text-3);">#{{ c.id }}</td>
+                {% if role == 'warden' %}
+                <td>{{ c.full_name }}</td>
+                {% endif %}
+                <td>
+                    {% if c.priority == 'urgent' or (role == 'warden' and c.category in ['hot_water', 'cold_water']) %}
+                        <span class="badge-priority pulsing-red" style="margin:0;"><i class="fas fa-triangle-exclamation"></i> URGENT</span>
+                    {% elif c.priority == 'high' %}
+                        <span class="badge-priority" style="background: rgba(249, 115, 22, 0.15); color: #c2410c !important; border: 1px solid rgba(249, 115, 22, 0.3); margin:0;">HIGH</span>
+                    {% else %}
+                        <span class="badge-priority" style="background: rgba(148, 163, 184, 0.15); color: #475569 !important; border: 1px solid rgba(148, 163, 184, 0.3); margin:0;">NORMAL</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="font-weight:700; color:var(--text-dark); margin-bottom:0.2rem;">{{ c.title }}</div>
+                    <div style="font-size:0.8rem; color:var(--text-3);">
+                        <i class="fas fa-map-marker-alt"></i> 
+                        {% if c.location %}
+                            {{ c.location }}
+                        {% elif c.room_number %}
+                            Room {{ c.room_number }}
+                        {% else %}
+                            Not specified
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    {% if c.category == 'hot_water' %}
+                        <span class="tag tag-hot-water">🔥 Hot Water</span>
+                    {% elif c.category == 'cold_water' %}
+                        <span class="tag tag-cold-water">❄️ Cold Water</span>
+                    {% else %}
+                        <span class="tag">{{ c.category|category_emoji }} {{ c.category|title }}</span>
+                    {% endif %}
+                    {% if c.department %}
+                        <div style="font-size:0.7rem; margin-top:0.3rem; color:var(--text-3); font-weight:600;"><i class="fas fa-building"></i> {{ c.department|replace('_', ' ')|title }}</div>
+                    {% endif %}
+                </td>
+                {% if role == 'warden' %}
+                <td>
+                    {% if c.staff_name %}
+                        <span style="font-weight:600; color:var(--primary); font-size:0.9rem;"><i class="fas fa-hard-hat"></i> {{ c.staff_name }}</span>
+                    {% else %}
+                        <span class="text-muted" style="font-size:0.85rem; font-style:italic;">Unassigned</span>
+                    {% endif %}
+                </td>
+                {% endif %}
+                <td>
+                    <span class="badge-status {{ 'green' if c.status == 'resolved' else 'yellow' if c.status in ['pending', 'in_progress', 'unresolved'] else 'red' }}">
+                        {{ c.status|replace('_', ' ')|title }}
+                    </span>
+                </td>
+                <td>
+                    {% if role == 'warden' %}
+                        {% if c.status != 'resolved' %}
+                        <form method="POST" action="{{ url_for('complaint.update_status', complaint_id=c.id) }}" class="inline-form">
+                            <select name="status" class="select-sm">
+                                <option value="pending" {{ 'selected' if c.status=='pending' }}>Pending</option>
+                                <option value="in_progress" {{ 'selected' if c.status=='in_progress' }}>In Progress</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                        </form>
+                        {% else %}
+                        <span class="text-success"><i class="fas fa-check-circle"></i> Resolved</span>
+                        {% endif %}
+                    {% else %}
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            {% if c.status == 'in_progress' %}
+                                <form method="POST" action="{{ url_for('complaint.student_action', complaint_id=c.id) }}" style="display: flex; gap: 0.5rem;">
+                                    <button type="submit" name="action" value="done" class="btn btn-green btn-sm"><i class="fas fa-check"></i> Done</button>
+                                    <button type="submit" name="action" value="not_done" class="btn btn-red btn-sm"><i class="fas fa-times"></i> Not Done</button>
+                                </form>
+                            {% elif c.status == 'unresolved' %}
+                                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                    <form method="POST" action="{{ url_for('complaint.student_action', complaint_id=c.id) }}" style="display: flex; gap: 0.5rem;">
+                                        <button type="submit" name="action" value="done" class="btn btn-green btn-sm"><i class="fas fa-check"></i> Done</button>
+                                        <button type="submit" name="action" value="not_done" class="btn btn-red btn-sm"><i class="fas fa-times"></i> Not Done</button>
+                                    </form>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <a href="{{ url_for('complaint.edit', complaint_id=c.id) }}" class="btn btn-outline btn-sm" style="color: var(--primary); border-color: var(--primary); padding: 0.3rem 0.6rem; border-radius: 12px;"><i class="fas fa-edit"></i> Edit</a>
+                                        <form id="delete-form-{{ c.id }}" method="POST" action="{{ url_for('complaint.delete', complaint_id=c.id) }}" style="margin: 0;">
+                                            <button type="button" class="btn btn-danger btn-sm" style="padding: 0.3rem 0.6rem; border-radius: 12px;" onclick="confirmDelete('{{ c.id }}')"><i class="fas fa-trash"></i> Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% elif c.status == 'resolved' %}
+                                <span class="text-success" style="font-weight: 700;"><i class="fas fa-check-circle"></i> Resolved</span>
+                            {% else %}
+                                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                    <span class="text-muted" style="font-size: 0.82rem; font-weight: 600;"><i class="fas fa-hourglass-half"></i> Awaiting Action</span>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <a href="{{ url_for('complaint.edit', complaint_id=c.id) }}" class="btn btn-outline btn-sm" style="color: var(--primary); border-color: var(--primary); padding: 0.3rem 0.6rem; border-radius: 12px;"><i class="fas fa-edit"></i> Edit</a>
+                                        <form id="delete-form-{{ c.id }}" method="POST" action="{{ url_for('complaint.delete', complaint_id=c.id) }}" style="margin: 0;">
+                                            <button type="button" class="btn btn-danger btn-sm" style="padding: 0.3rem 0.6rem; border-radius: 12px;" onclick="confirmDelete('{{ c.id }}')"><i class="fas fa-trash"></i> Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </td>
+                <td>{{ c.created_at|datefmt }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state fade-in">
+    <div class="empty-icon"><i class="fas fa-inbox" style="color:var(--text-muted)"></i></div>
+    <p>No complaints found.</p>
+</div>
+</div>
+{% endif %}
+
+<script>
+function filterComplaints() {
+    const category = document.getElementById('categoryFilter').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value.toLowerCase();
+    const dateRange = document.getElementById('dateFilter').value;
+    const rows = document.querySelectorAll('.complaint-row');
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const lastWeek = now.getTime() - (7 * 24 * 60 * 60 * 1000);
+    const lastMonth = now.getTime() - (30 * 24 * 60 * 60 * 1000);
+
+    let visibleCount = 0;
+    rows.forEach(row => {
+        const catMatch = category === '' || row.dataset.category.includes(category);
+        const statMatch = status === '' || row.dataset.status.includes(status);
+        
+        let dateMatch = true;
+        if (dateRange !== '') {
+            const rowDate = new Date(row.dataset.date).getTime();
+            if (dateRange === 'today') {
+                dateMatch = rowDate >= todayStart;
+            } else if (dateRange === 'week') {
+                dateMatch = rowDate >= lastWeek;
+            } else if (dateRange === 'month') {
+                dateMatch = rowDate >= lastMonth;
+            }
+        }
+
+        if (catMatch && statMatch && dateMatch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Optional: display "no matches" if all filtered out
+    let emptyRow = document.getElementById('empty-filter-row');
+    if (visibleCount === 0 && rows.length > 0) {
+        if (!emptyRow) {
+            emptyRow = document.createElement('tr');
+            emptyRow.id = 'empty-filter-row';
+            emptyRow.innerHTML = `<td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-muted);"><i class="fas fa-search"></i> No complaints match your selected filters.</td>`;
+            document.querySelector('.data-table tbody').appendChild(emptyRow);
+        } else {
+            emptyRow.style.display = '';
+        }
+    } else if (emptyRow) {
+        emptyRow.style.display = 'none';
+    }
+}
+
+function confirmDelete(complaintId) {
+    showConfirm(
+        '🗑️ Delete Complaint',
+        'Are you sure you want to permanently delete this complaint? This action cannot be undone.',
+        'Delete',
+        function() {
+            document.getElementById('delete-form-' + complaintId).submit();
+        }
+    );
+}
+</script>
+{% endblock %}

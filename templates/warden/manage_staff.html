@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Manage Service Staff — Warden Portal{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+    <div class="page-header-left">
+        <div class="breadcrumb">
+            <a href="{{ url_for('warden.dashboard') }}" style="color:var(--text-3); text-decoration:none;"><i class="fas fa-arrow-left"></i> Dashboard</a> 
+            <span style="margin:0 0.5rem;">/</span> 
+            Manage Staff
+        </div>
+        <h1>Service Staff Directory</h1>
+        <p>Manage hostel service personnel and view their current workload.</p>
+    </div>
+    <div class="page-header-right">
+        <a href="{{ url_for('warden.add_staff') }}" class="abode-btn abode-btn-primary"><i class="fas fa-plus"></i> Add Staff Member</a>
+    </div>
+</div>
+
+{% if staff_list %}
+<div class="table-wrapper fade-in" style="animation-delay: 0.1s;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Department</th>
+                <th>Workload</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staff_list %}
+            <tr>
+                <td style="font-weight:700; color:var(--text-dark);">{{ staff.full_name }}</td>
+                <td style="font-family:monospace; color:var(--text-3);">{{ staff.username }}</td>
+                <td>
+                    <span class="tag" style="font-weight:600;">{{ labels.get(staff.department, staff.department) }}</span>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <span style="color:#F97316; font-size:0.85rem; font-weight:700;"><i class="fas fa-clipboard-list"></i> {{ staff.open_complaints }} open</span>
+                        <span style="color:#22C55E; font-size:0.85rem; font-weight:700;"><i class="fas fa-check-double"></i> {{ staff.resolved_complaints }} done</span>
+                    </div>
+                </td>
+                <td>
+                    {% if staff.active %}
+                        <span class="badge-status green">Active</span>
+                    {% else %}
+                        <span class="badge-status red">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('warden.toggle_staff', user_id=staff.user_id) }}" class="inline-form">
+                        {% if staff.active %}
+                            <button type="submit" class="btn btn-danger btn-sm" style="border-radius:12px;"><i class="fas fa-ban"></i> Deactivate</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-green btn-sm" style="border-radius:12px;"><i class="fas fa-check"></i> Activate</button>
+                        {% endif %}
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state fade-in" style="animation-delay: 0.1s;">
+    <div class="empty-icon"><i class="fas fa-users-slash" style="color:var(--text-muted)"></i></div>
+    <p>No service staff accounts found.</p>
+    <div style="margin-top:1rem;">
+        <a href="{{ url_for('warden.add_staff') }}" class="abode-btn abode-btn-primary"><i class="fas fa-plus"></i> Create First Staff Account</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

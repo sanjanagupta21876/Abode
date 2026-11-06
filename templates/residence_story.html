@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}NSC Bose International Boarding House{% endblock %}
+{% block content %}
+<div class="residence-reel-page">
+  <section class="residence-reel-copy" aria-labelledby="residence-title">
+    <img class="residence-institution-logo" src="{{ url_for('hostel_files', filename='srm-logo.png') }}" alt="SRM Institute of Science and Technology">
+    <h1 id="residence-title">NSC Bose<br>International<br>Boarding House</h1>
+    <p class="residence-description">Where campus living feels like home.</p>
+    <a href="{{ url_for('auth.login', role='student') }}" class="residence-skip-link">Skip to sign in <i class="fas fa-arrow-right"></i></a>
+  </section>
+
+  <section class="residence-reel-gallery" aria-label="A glimpse of life at NSC Bose International Boarding House">
+    <div class="reel-card reel-card-down">
+      <div class="reel-track">
+        <figure><img src="{{ url_for('hostel_files', filename='entrance.jpg.png') }}" alt="Entrance of NSC Bose International Boarding House"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='corridor.jpg.png') }}" alt="Corridor in the boarding house"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='dining-hall.jpg.png') }}" alt="Dining hall at the boarding house"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='fitness-centre.jpg.png') }}" alt="Fitness centre at the boarding house"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='entrance.jpg.png') }}" alt="" aria-hidden="true"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='corridor.jpg.png') }}" alt="" aria-hidden="true"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='dining-hall.jpg.png') }}" alt="" aria-hidden="true"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='fitness-centre.jpg.png') }}" alt="" aria-hidden="true"></figure>
+      </div>
+    </div>
+    <div class="reel-card reel-card-up">
+      <div class="reel-track">
+        <figure><img src="{{ url_for('hostel_files', filename='interior.jpg.png') }}" alt="Modern interior of the boarding house"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='hall2.jpg.png') }}" alt="Hall 2"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='students.jpg.png') }}" alt="Students hall"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='hall1.pg.png') }}" alt="Hall 1"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='interior.jpg.png') }}" alt="" aria-hidden="true"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='hall2.jpg.png') }}" alt="" aria-hidden="true"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='students.jpg.png') }}" alt="" aria-hidden="true"></figure>
+        <figure><img src="{{ url_for('hostel_files', filename='hall1.pg.png') }}" alt="" aria-hidden="true"></figure>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Add Service Staff — Warden Portal{% endblock %}
+{% block content %}
+<style>
+.add-staff-form {
+    max-width: 500px;
+    margin: 2rem auto;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 20px rgba(15,39,71,0.06);
+}
+.add-staff-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.add-staff-header h2 {
+    color: var(--text-dark);
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+.add-staff-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+.as-group {
+    margin-bottom: 1.25rem;
+}
+.as-label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+    color: var(--text-2);
+    font-size: 0.9rem;
+}
+.as-input, .as-select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    border: 1.5px solid #CBD5E1;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background: #FAFBFC;
+    color: var(--text-dark);
+}
+.as-input:focus, .as-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0,110,187,0.12);
+}
+.as-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+.as-btn {
+    flex: 1;
+    padding: 0.85rem;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 1rem;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-cancel {
+    background: transparent;
+    border: 1.5px solid #CBD5E1;
+    color: var(--text-3);
+}
+.btn-cancel:hover {
+    background: var(--bg);
+    color: var(--text-dark);
+}
+.btn-submit {
+    background: linear-gradient(135deg, #006EBB 0%, #005099 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(0,110,187,0.25);
+}
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,110,187,0.35);
+}
+</style>
+
+<div class="page-header fade-in">
+    <div class="breadcrumb">
+        <a href="{{ url_for('warden.dashboard') }}" style="color:var(--text-3); text-decoration:none;"><i class="fas fa-arrow-left"></i> Dashboard</a> 
+        <span style="margin:0 0.5rem;">/</span> 
+        <a href="{{ url_for('warden.manage_staff') }}" style="color:var(--text-3); text-decoration:none;">Manage Staff</a>
+        <span style="margin:0 0.5rem;">/</span>
+        Add
+    </div>
+</div>
+
+<div class="add-staff-form fade-in" style="animation-delay: 0.1s;">
+    <div class="add-staff-header">
+        <div style="width:56px; height:56px; border-radius:16px; background:rgba(0,110,187,0.1); color:var(--primary); font-size:1.5rem; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem;">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <h2>Create Staff Account</h2>
+        <p>This account will automatically receive complaints for its assigned department.</p>
+    </div>
+
+    <form method="POST">
+        <div class="as-group">
+            <label class="as-label">Full Name</label>
+            <input type="text" name="full_name" class="as-input" required placeholder="e.g., Ramesh Kumar">
+        </div>
+        
+        <div class="as-group">
+            <label class="as-label">Username</label>
+            <input type="text" name="username" class="as-input" required placeholder="e.g., ramesh_plumber">
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Must be unique. No spaces.</div>
+        </div>
+        
+        <div class="as-group">
+            <label class="as-label">Password</label>
+            <input type="password" name="password" class="as-input" required placeholder="Create a secure password">
+        </div>
+        
+        <div class="as-group">
+            <label class="as-label">Department</label>
+            <select name="department" class="as-select" required>
+                <option value="" disabled selected>Select department...</option>
+                {% for dept in departments %}
+                    <option value="{{ dept }}">{{ labels.get(dept, dept) }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="as-actions">
+            <a href="{{ url_for('warden.manage_staff') }}" class="as-btn btn-cancel">Cancel</a>
+            <button type="submit" class="as-btn btn-submit">Create Account</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Abode{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/abode-animations.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+    @keyframes sos-pulsing {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+    }
+    .sos-btn-glow {
+        animation: sos-pulsing 1.6s infinite !important;
+    }
+    .sos-btn-glow:hover {
+        transform: scale(1.1) !important;
+        background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+        animation: none !important;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.9) !important;
+    }
+    </style>
+</head>
+<body>
+
+{% if session.user_id %}
+{# ========== AUTHENTICATED: Sidebar + Topbar ========== #}
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="abode-brand-mark">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Abode Logo" class="abode-logo-img">
+            <span class="abode-brand-text">Abode</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <span class="nav-section-label">Main</span>
+        {% if session.role == 'warden' %}
+            <a href="{{ url_for('warden.dashboard') }}"   class="sidebar-link {% if request.endpoint == 'warden.dashboard' %}active{% endif %}"><i class="fas fa-gauge-high"></i> Dashboard</a>
+            <a href="{{ url_for('warden.students') }}"    class="sidebar-link {% if request.endpoint == 'warden.students' %}active{% endif %}"><i class="fas fa-user-graduate"></i> Students</a>
+            <a href="{{ url_for('warden.student_profiles') }}" class="sidebar-link {% if request.endpoint == 'warden.student_profiles' %}active{% endif %}"><i class="fas fa-id-card"></i> Student Profiles</a>
+            <a href="{{ url_for('outpass.tracking') }}"    class="sidebar-link {% if request.endpoint == 'outpass.tracking' %}active{% endif %}"><i class="fas fa-plane-departure"></i> Outpass Tracking</a>
+            <a href="{{ url_for('complaint.list_complaints') }}" class="sidebar-link {% if 'complaint' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Complaints</a>
+            <a href="{{ url_for('attendance.view') }}"    class="sidebar-link {% if 'attendance' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-calendar-check"></i> Attendance</a>
+            <span class="nav-section-label">Food &amp; Meals</span>
+            <a href="{{ url_for('menu.edit_menu') }}"     class="sidebar-link {% if 'menu' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-calendar-week"></i> Manage Menu</a>
+            <span class="nav-section-label">More</span>
+            <a href="{{ url_for('emergency.view_contacts') }}" class="sidebar-link {% if 'emergency' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-phone-volume"></i> Emergency</a>
+            <a href="{{ url_for('notification.view') }}"  class="sidebar-link {% if 'notification' in (request.endpoint or '') %}active{% endif %}">
+                <i class="fas fa-bell"></i> Notifications
+                {% if unread_count > 0 %}<span class="nav-badge">{{ unread_count }}</span>{% endif %}
+            </a>
+        {% elif session.role == 'service_staff' %}
+            <a href="{{ url_for('staff.dashboard') }}" class="sidebar-link {% if request.endpoint == 'staff.dashboard' %}active{% endif %}"><i class="fas fa-gauge-high"></i> Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('student.dashboard') }}"  class="sidebar-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}"><i class="fas fa-gauge-high"></i> Dashboard</a>
+            <a href="{{ url_for('outpass.my_outpasses') }}" class="sidebar-link {% if 'outpass' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-plane-departure"></i> Outpass</a>
+            <a href="{{ url_for('roommate.swipe') }}"     class="sidebar-link {% if 'roommate' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-heart"></i> Roommates</a>
+            <a href="{{ url_for('complaint.list_complaints') }}" class="sidebar-link {% if 'complaint' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Complaints</a>
+            <a href="{{ url_for('attendance.view') }}"    class="sidebar-link {% if 'attendance' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-calendar-check"></i> Attendance</a>
+            <a href="{{ url_for('menu.view_menu') }}"     class="sidebar-link {% if 'menu' in (request.endpoint or '') %}active{% endif %}"><i class="fas fa-calendar-week"></i> Weekly Menu</a>
+            <a href="{{ url_for('notification.view') }}"  class="sidebar-link {% if 'notification' in (request.endpoint or '') %}active{% endif %}">
+                <i class="fas fa-bell"></i> Notifications
+                {% if unread_count > 0 %}<span class="nav-badge">{{ unread_count }}</span>{% endif %}
+            </a>
+        {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            {% if session.profile_pic %}
+                <div class="avatar" style="background: none;"><img src="{{ url_for('static', filename='uploads/profile_pics/' ~ session.profile_pic) }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+            {% else %}
+                <div class="avatar">{{ (session.full_name or 'U')[:1].upper() }}</div>
+            {% endif %}
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name">{{ session.full_name }}</div>
+                <div class="sidebar-user-role">{{ session.role }}</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<header class="topbar">
+    <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <span class="hb-bar"></span>
+        <span class="hb-bar"></span>
+        <span class="hb-bar"></span>
+    </button>
+    <div class="topbar-right" style="margin-left:auto;">
+        {% if session.role == 'student' %}
+        <button class="icon-btn sos-btn-glow" onclick="triggerSOS('{{ sos_phone }}', '{{ sos_name }}')" aria-label="Emergency SOS" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; width: 38px; height: 38px; border-radius: 50%; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); margin-right: 0.75rem; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all 0.2s ease-in-out;">
+            <i class="fas fa-phone-alt" style="font-size: 0.9rem; transform: rotate(-10deg);"></i>
+        </button>
+        {% endif %}
+        <div class="notif-wrap" id="notifWrap">
+            <button class="icon-btn" id="notifBtn" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+                {% if unread_count > 0 %}<span class="notif-dot"></span>{% endif %}
+            </button>
+            <div class="notif-dropdown" id="notifDropdown">
+                <div class="notif-header">
+                    <h4>Notifications{% if unread_count > 0 %} <span class="tag" style="font-size:.62rem;">{{ unread_count }} new</span>{% endif %}</h4>
+                    <a href="{{ url_for('notification.view') }}">View all</a>
+                </div>
+                <div class="notif-list">
+                    <div class="notif-empty"><i class="fas fa-bell-slash" style="display:block;font-size:1.4rem;margin-bottom:.4rem;opacity:.4;"></i>No new notifications</div>
+                </div>
+            </div>
+        </div>
+        <div class="profile-wrap" id="profileWrap">
+            <button class="profile-btn" id="profileBtn">
+                {% if session.profile_pic %}
+                    <div class="avatar sm" style="background: none;"><img src="{{ url_for('static', filename='uploads/profile_pics/' ~ session.profile_pic) }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+                {% else %}
+                    <div class="avatar sm">{{ (session.full_name or 'U')[:1].upper() }}</div>
+                {% endif %}
+                <span class="profile-name">{{ (session.full_name or '').split()[0] }}</span>
+                <i class="fas fa-chevron-down" style="font-size:.6rem;color:var(--text-3);"></i>
+            </button>
+            <div class="profile-dropdown" id="profileDropdown">
+                <div style="padding:.75rem 1rem .35rem;">
+                    <div style="font-size:.82rem;font-weight:700;color:var(--text);">{{ session.full_name }}</div>
+                    <div style="font-size:.7rem;color:var(--text-3);text-transform:capitalize;">{{ session.role }}</div>
+                </div>
+                <div class="pd-divider"></div>
+                <a href="{{ url_for('staff.dashboard') if session.role == 'service_staff' else (url_for('warden.dashboard') if session.role == 'warden' else url_for('student.dashboard')) }}"><i class="fas fa-gauge-high"></i> Dashboard</a>
+                <div class="pd-divider"></div>
+                <a href="{{ url_for('auth.logout') }}" class="danger"><i class="fas fa-right-from-bracket"></i> Sign out</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="main" id="mainContent">
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+    <div class="flash-container">{% for category, message in messages %}
+        <div class="alert alert-{{ category }}"><i class="fas fa-{% if category == 'success' %}circle-check{% elif category == 'danger' %}circle-exclamation{% elif category == 'warning' %}triangle-exclamation{% else %}circle-info{% endif %}"></i> {{ message }}</div>
+    {% endfor %}</div>{% endif %}{% endwith %}
+    <div class="page">
+
+{% else %}
+{# ========== UNAUTHENTICATED: Simple top nav ========== #}
+
+<div class="landing">
+    {% if request.endpoint not in ['index', 'residence_story'] %}
+    <nav class="landing-nav">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Abode" style="width:34px;height:34px;object-fit:contain;">
+            <span class="abode-brand-text" style="font-size:.95rem;">Abode</span>
+        </div>
+    </nav>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+    <div class="flash-container">{% for category, message in messages %}
+        <div class="alert alert-{{ category }}"><i class="fas fa-circle-info"></i> {{ message }}</div>
+    {% endfor %}</div>{% endif %}{% endwith %}
+
+{% endif %}
+
+{% block content %}{% endblock %}
+
+{% if session.user_id %}
+    </div>{# /page #}
+</main>
+{% else %}
+</div>{# /landing #}
+{% endif %}
+
+<!-- ===== SOS MODAL ===== -->
+<div id="sosModal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:28px; padding:2.5rem 2rem; max-width:420px; width:92%; box-shadow:0 30px 70px rgba(0,0,0,0.25); text-align:center; border:2px solid rgba(239,68,68,0.2); animation:fadeInScale 0.25s ease;">
+        <div style="width:76px;height:76px;background:linear-gradient(135deg,#ef4444,#b91c1c);border-radius:50%;margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:center;animation:sos-pulsing 1.6s infinite;box-shadow:0 0 0 0 rgba(239,68,68,0.7);">
+            <i class="fas fa-phone-alt" style="color:#fff;font-size:2rem;transform:rotate(-10deg);"></i>
+        </div>
+        <h2 style="color:#dc2626;font-weight:900;font-size:1.35rem;margin:0 0 0.4rem;">🚨 Emergency SOS</h2>
+        <p id="sosWardenInfo" style="color:#6b7280;font-size:0.92rem;margin:0 0 0.5rem;line-height:1.5;"></p>
+        <p id="sosWardenPhone" style="color:#111827;font-weight:800;font-size:1.2rem;margin:0 0 2rem;letter-spacing:0.5px;"></p>
+        <div style="display:flex;gap:0.85rem;justify-content:center;">
+            <button onclick="cancelSOS()" style="padding:0.8rem 1.6rem;border-radius:18px;border:2px solid #e5e7eb;background:transparent;color:#6b7280;font-weight:700;cursor:pointer;font-size:0.95rem;font-family:inherit;transition:all 0.2s;">Cancel</button>
+            <button onclick="confirmSOS()" style="padding:0.8rem 1.8rem;border-radius:18px;border:none;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;font-weight:800;cursor:pointer;font-size:0.95rem;font-family:inherit;box-shadow:0 6px 20px rgba(239,68,68,0.4);transition:all 0.2s;">
+                <i class="fas fa-phone-alt" style="margin-right:6px;"></i> Call Now
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== GENERIC CONFIRM MODAL (delete, etc.) ===== -->
+<div id="confirmModal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:28px; padding:2.5rem 2rem; max-width:400px; width:92%; box-shadow:0 30px 70px rgba(0,0,0,0.25); text-align:center; animation:fadeInScale 0.25s ease;">
+        <div style="width:64px;height:64px;background:#fef2f2;border-radius:50%;margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:center;">
+            <i id="confirmIcon" class="fas fa-trash" style="color:#dc2626;font-size:1.6rem;"></i>
+        </div>
+        <h3 id="confirmTitle" style="font-weight:900;font-size:1.15rem;margin:0 0 0.5rem;color:#111827;"></h3>
+        <p id="confirmMsg" style="color:#6b7280;font-size:0.92rem;margin:0 0 1.75rem;line-height:1.5;"></p>
+        <div style="display:flex;gap:0.85rem;justify-content:center;">
+            <button onclick="cancelConfirm()" style="padding:0.8rem 1.6rem;border-radius:18px;border:2px solid #e5e7eb;background:transparent;color:#6b7280;font-weight:700;cursor:pointer;font-size:0.95rem;font-family:inherit;transition:all 0.2s;">Cancel</button>
+            <button id="confirmOkBtn" onclick="confirmOk()" style="padding:0.8rem 1.6rem;border-radius:18px;border:none;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;font-weight:800;cursor:pointer;font-size:0.95rem;font-family:inherit;box-shadow:0 6px 20px rgba(239,68,68,0.35);transition:all 0.2s;">Delete</button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes fadeInScale {
+    from { opacity:0; transform:scale(0.88); }
+    to   { opacity:1; transform:scale(1); }
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+/* ---- SOS ---- */
+let _sosPhone = '', _sosName = '';
+function triggerSOS(phone, name) {
+    _sosPhone = phone; _sosName = name;
+    document.getElementById('sosWardenInfo').textContent = 'This will call Warden ' + name + ' immediately.';
+    document.getElementById('sosWardenPhone').textContent = '\uD83D\uDCDE ' + phone;
+    const m = document.getElementById('sosModal');
+    m.style.display = 'flex';
+}
+function cancelSOS()  { document.getElementById('sosModal').style.display = 'none'; }
+function confirmSOS() { document.getElementById('sosModal').style.display = 'none'; window.location.href = 'tel:' + _sosPhone; }
+
+/* ---- Generic Confirm ---- */
+let _confirmCallback = null;
+function showConfirm(title, msg, okLabel, callback) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent   = msg;
+    document.getElementById('confirmOkBtn').textContent = okLabel || 'Confirm';
+    _confirmCallback = callback;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+function cancelConfirm() { document.getElementById('confirmModal').style.display = 'none'; _confirmCallback = null; }
+function confirmOk()     { document.getElementById('confirmModal').style.display = 'none'; if (_confirmCallback) _confirmCallback(); }
+
+/* Close on backdrop click */
+document.addEventListener('click', function(e) {
+    if (e.target.id === 'sosModal')     cancelSOS();
+    if (e.target.id === 'confirmModal') cancelConfirm();
+});
+</script>
+</body>
+</html>

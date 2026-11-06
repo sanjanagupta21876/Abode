@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Complaint' if complaint else 'Submit Complaint' }} - SmartHostel{% endblock %}
+{% block content %}
+<style>
+.cute-complaint-form {
+    max-width: 600px;
+    margin: 2rem auto;
+    background: #fff;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 14px rgba(15,39,71,0.06);
+}
+.cute-complaint-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.cute-complaint-header h2 {
+    color: var(--text-dark);
+    font-weight: 800;
+}
+.cute-complaint-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+.cute-form-group {
+    margin-bottom: 1.5rem;
+}
+.cute-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: var(--text-2);
+    font-size: 0.95rem;
+}
+.cute-label i {
+    margin-right: 0.4rem;
+}
+.cute-input, .cute-select, .cute-textarea {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background: #fff;
+    color: var(--text-dark);
+}
+.cute-input:focus, .cute-select:focus, .cute-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0,110,187,0.16);
+}
+.cute-textarea {
+    resize: vertical;
+    border-radius: 8px;
+}
+.cute-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+.cute-btn-cancel {
+    padding: 0.85rem 1.7rem;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    background: transparent;
+    color: var(--text-3);
+    font-weight: 700;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+.cute-btn-cancel:hover {
+    background: var(--bg);
+    color: var(--text-dark);
+}
+.cute-btn-submit {
+    padding: 0.85rem 1.9rem;
+    border-radius: 8px;
+    border: none;
+    background: #006EBB;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.05rem;
+    box-shadow: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+.cute-btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+</style>
+
+<div class="cute-complaint-form fade-in">
+    <div class="cute-complaint-header">
+        <h2><i class="fas fa-pen-to-square" style="color:var(--abode-mint);"></i> {{ 'Edit Complaint' if complaint else 'Submit Complaint' }}</h2>
+        <p>{{ 'Update your complaint details below' if complaint else 'Let us know what needs fixing' }}</p>
+    </div>
+    
+    <form method="POST">
+        <div class="cute-form-group">
+            <label class="cute-label"><i class="fas fa-heading" style="color:var(--abode-lavender);"></i> Title *</label>
+            <input type="text" name="title" class="cute-input" required placeholder="e.g., Leaking tap in bathroom"
+                value="{{ complaint.title if complaint else '' }}">
+        </div>
+        
+        <div class="cute-form-group">
+            <label class="cute-label"><i class="fas fa-tags" style="color:var(--abode-pink);"></i> Category</label>
+            <select name="category" class="cute-select">
+                <option value="carpenter" {{ 'selected' if complaint and complaint.category == 'carpenter' }}>{{ 'carpenter'|category_emoji }} Carpenter</option>
+                <option value="plumber" {{ 'selected' if complaint and complaint.category == 'plumber' }}>{{ 'plumber'|category_emoji }} Plumber</option>
+                <option value="hot_water" {{ 'selected' if complaint and complaint.category == 'hot_water' }}>{{ 'hot_water'|category_emoji }} Hot Water</option>
+                <option value="cold_water" {{ 'selected' if complaint and complaint.category == 'cold_water' }}>{{ 'cold_water'|category_emoji }} Cold Water</option>
+                <option value="electrician" {{ 'selected' if complaint and complaint.category == 'electrician' }}>{{ 'electrician'|category_emoji }} Electrician</option>
+                <option value="wifi" {{ 'selected' if complaint and complaint.category == 'wifi' }}>{{ 'wifi'|category_emoji }} WiFi</option>
+                <option value="laundry" {{ 'selected' if complaint and complaint.category == 'laundry' }}>{{ 'laundry'|category_emoji }} Laundry</option>
+                <option value="food" {{ 'selected' if complaint and complaint.category == 'food' }}>{{ 'food'|category_emoji }} Food</option>
+                <option value="security" {{ 'selected' if complaint and complaint.category == 'security' }}>{{ 'security'|category_emoji }} Security</option>
+                <option value="cleanliness" {{ 'selected' if complaint and complaint.category == 'cleanliness' }}>{{ 'cleanliness'|category_emoji }} Cleanliness</option>
+                <option value="other" {{ 'selected' if complaint and complaint.category == 'other' }}>{{ 'other'|category_emoji }} Other</option>
+            </select>
+        </div>
+        
+        <div class="cute-form-group">
+            <label class="cute-label"><i class="fas fa-exclamation-triangle" style="color:#EF4444;"></i> Priority</label>
+            <select name="priority" class="cute-select">
+                <option value="normal" {{ 'selected' if complaint and complaint.priority == 'normal' }}>Normal</option>
+                <option value="high" {{ 'selected' if complaint and complaint.priority == 'high' }}>High</option>
+                <option value="urgent" {{ 'selected' if complaint and complaint.priority == 'urgent' }}>Urgent</option>
+            </select>
+        </div>
+        
+        <div class="cute-form-group">
+            <label class="cute-label"><i class="fas fa-map-marker-alt" style="color:var(--text-3);"></i> Location</label>
+            <input type="text" name="location" class="cute-input" placeholder="e.g., Washroom, 3rd Floor Corridor, Room 102"
+                value="{{ complaint.location if complaint and complaint.location else '' }}">
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Leave blank to use your default room number.</div>
+        </div>
+        
+        <div class="cute-form-group">
+            <label class="cute-label"><i class="fas fa-align-left" style="color:var(--orange-text);"></i> Description *</label>
+            <textarea name="description" rows="5" class="cute-textarea" required
+                placeholder="Please describe the issue in detail so we can help quickly...">{{ complaint.description if complaint else '' }}</textarea>
+        </div>
+        
+        <div class="cute-actions">
+            <a href="{{ url_for('complaint.list_complaints') }}" class="cute-btn-cancel">Cancel</a>
+            <button type="submit" class="cute-btn-submit"><i class="fas fa-save" style="margin-right:6px;"></i> {{ 'Save Changes' if complaint else 'Submit' }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

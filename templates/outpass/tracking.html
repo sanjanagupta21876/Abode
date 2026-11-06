@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Outpass Tracking - Abode{% endblock %}
+{% block content %}
+
+<div class="page-header" style="margin-bottom:1.5rem;">
+    <h1 style="font-size:1.7rem;font-weight:800;color:#0f172a;letter-spacing:-0.025em;">Live Outpass Tracking</h1>
+    <p style="color:#64748b;font-size:0.9rem;">Track who is out, who has returned, and who is overdue.</p>
+</div>
+
+<style>
+.trk-section { margin-bottom: 1.75rem; }
+.trk-section h2 { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+.trk-card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1rem 1.25rem; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:0.75rem; box-shadow:0 3px 10px rgba(15,23,42,0.03); }
+.trk-meta { font-size:0.85rem; color:#475569; }
+.trk-meta strong { color:#0f172a; }
+.trk-pill { font-size:0.72rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:20px; text-transform:uppercase; letter-spacing:0.3px; }
+.pill-active { background:#dbeafe; color:#1d4ed8; }
+.pill-grace { background:#fef3c7; color:#b45309; }
+.pill-overdue { background:#fee2e2; color:#b91c1c; }
+.pill-completed { background:#dcfce7; color:#166534; }
+</style>
+
+<div class="trk-section">
+    <h2><i class="fas fa-person-walking-arrow-right" style="color:#2563eb;"></i> Active / Grace Period</h2>
+    {% if active %}
+        {% for op in active %}
+        <div class="trk-card">
+            <div>
+                <div style="font-weight:800;color:#0f172a;font-size:0.98rem;">{{ op.full_name }} <span style="font-weight:600;color:#64748b;">· Room {{ op.room_number or 'N/A' }}</span></div>
+                <div class="trk-meta">{{ op.type.title() }} to <strong>{{ op.destination }}</strong> · {{ op.purpose }} · Return by <strong>{{ op.return_at }}</strong></div>
+            </div>
+            <span class="trk-pill {% if op.computed_status == 'active' %}pill-active{% else %}pill-grace{% endif %}">{{ op.computed_status }}</span>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:1rem;">No active outpasses.</div>
+    {% endif %}
+</div>
+
+<div class="trk-section">
+    <h2><i class="fas fa-circle-exclamation" style="color:#dc2626;"></i> Overdue</h2>
+    {% if overdue %}
+        {% for op in overdue %}
+        <div class="trk-card">
+            <div>
+                <div style="font-weight:800;color:#0f172a;font-size:0.98rem;">{{ op.full_name }} <span style="font-weight:600;color:#64748b;">· Room {{ op.room_number or 'N/A' }}</span></div>
+                <div class="trk-meta">{{ op.type.title() }} to <strong>{{ op.destination }}</strong> · Was due at <strong>{{ op.return_at }}</strong></div>
+            </div>
+            <span class="trk-pill pill-overdue">Overdue</span>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:1rem;">No overdue students.</div>
+    {% endif %}
+</div>
+
+<div class="trk-section">
+    <h2><i class="fas fa-check-circle" style="color:#16a34a;"></i> Returned Recently</h2>
+    {% if completed %}
+        {% for op in completed %}
+        <div class="trk-card">
+            <div>
+                <div style="font-weight:800;color:#0f172a;font-size:0.98rem;">{{ op.full_name }} <span style="font-weight:600;color:#64748b;">· Room {{ op.room_number or 'N/A' }}</span></div>
+                <div class="trk-meta">{{ op.type.title() }} to <strong>{{ op.destination }}</strong> · Checked in at <strong>{{ op.checked_in_at }}</strong></div>
+            </div>
+            <span class="trk-pill pill-completed">Returned</span>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:1rem;">No recent check-ins.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

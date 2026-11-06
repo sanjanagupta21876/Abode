@@ -1,0 +1,1361 @@
+{% extends "base.html" %}
+{% block title %}Register - Abode{% endblock %}
+{% block content %}
+
+<div class="reg-container fade-in">
+    <!-- Left panel: Brand and dynamic interactive card preview -->
+    <div class="reg-sidebar">
+        <div class="reg-brand">
+            <div class="reg-logo-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H15V15H9V21H4C3.45 21 3 20.55 3 20V10.5Z" fill="white"/>
+                </svg>
+            </div>
+            <span class="reg-brand-text">Abode</span>
+        </div>
+        
+        <div class="reg-hero-msg">
+            <h2>Start your premium hostel journey.</h2>
+            <p>Complete your profile registration to find matches and manage your stay.</p>
+        </div>
+
+        <!-- Student Dynamic Preview Card -->
+        <div class="student-live-card">
+            <div class="live-card-badge">LIVE PREVIEW</div>
+            <div class="live-card-header">
+                <div class="live-avatar-wrap">
+                    <img id="previewAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop" alt="Profile Pic">
+                </div>
+                <div class="live-header-meta">
+                    <h3 id="previewName">Sanjana Gupta</h3>
+                    <p id="previewEmail">sg5797@srmist.edu.in</p>
+                </div>
+            </div>
+            <div class="live-card-body">
+                <div class="live-info-grid">
+                    <div>
+                        <small>Roll Number</small>
+                        <span id="previewRoll">-</span>
+                    </div>
+                    <div>
+                        <small>Course</small>
+                        <span id="previewCourse">-</span>
+                    </div>
+                    <div>
+                        <small>Year</small>
+                        <span id="previewYear">Year 1</span>
+                    </div>
+                    <div>
+                        <small>Room No</small>
+                        <span id="previewRoom">-</span>
+                    </div>
+                </div>
+                <div class="live-divider"></div>
+                <div class="live-allergies">
+                    <strong>Allergies:</strong> <span id="previewAllergies" class="allergy-tag">Not specified</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right panel: Multi-step registration wizard -->
+    <div class="reg-form-wrap">
+        <!-- Progress Stepper -->
+        <div class="reg-stepper">
+            <div class="step-indicator active" id="stepIndicator1" onclick="goToStep(1)">
+                <span class="step-num">1</span>
+                <span class="step-text">Account</span>
+            </div>
+            <div class="step-line" id="stepLine1"></div>
+            <div class="step-indicator" id="stepIndicator2" onclick="goToStep(2)">
+                <span class="step-num">2</span>
+                <span class="step-text">Verify</span>
+            </div>
+            <div class="step-line" id="stepLine2"></div>
+            <div class="step-indicator" id="stepIndicator3" onclick="goToStep(3)">
+                <span class="step-num">3</span>
+                <span class="step-text">Hostel</span>
+            </div>
+            <div class="step-line" id="stepLine3"></div>
+            <div class="step-indicator" id="stepIndicator4" onclick="goToStep(4)">
+                <span class="step-num">4</span>
+                <span class="step-text">Roommate</span>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" enctype="multipart/form-data" class="reg-wizard-form" id="registerForm" onsubmit="return validateFinalForm()">
+            <!-- Step 1: Account Details & Profile Picture -->
+            <div class="reg-step-pane active" id="step1">
+                <div class="step-header">
+                    <h2>Create Student Account</h2>
+                    <p>Enter your basic account details and upload a profile photo.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label class="required-field"><i class="fas fa-user"></i> Full Name</label>
+                        <input type="text" name="full_name" id="inputFullName" required placeholder="e.g. Sanjana Gupta" oninput="updatePreview()" autofocus>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label><i class="fas fa-phone"></i> Phone Number</label>
+                        <input type="tel" name="phone" id="inputPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label class="required-field"><i class="fas fa-envelope"></i> Official Email</label>
+                        <div class="srm-email-input-wrapper">
+                            <input type="text" name="email" id="inputEmail" required placeholder="e.g. sg5797" oninput="updatePreview()">
+                            <span class="srm-domain-addon">@srmist.edu.in</span>
+                        </div>
+                        <small class="form-help">Must end with @srmist.edu.in</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required-field"><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" name="password" id="inputPassword" required placeholder="Min 6 characters">
+                    </div>
+                </div>
+
+                <div class="form-row align-center">
+                    <div class="form-group flex-2">
+                        <label class="required-field"><i class="fas fa-camera"></i> Profile Picture</label>
+                        <div class="custom-file-upload">
+                            <input type="file" name="profile_pic" id="profile_pic" accept="image/*" required onchange="handleImageUpload(this)">
+                            <div class="upload-placeholder">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                                <span>Upload photo (PNG, JPG)</span>
+                            </div>
+                        </div>
+                        <small class="form-help" style="margin-top: 0.35rem; display: block; text-align: center; font-weight: 600; color: #64748b;">
+                            <i class="fas fa-circle-info" style="color: #2563EB;"></i> Please upload a formal passport-size photo
+                        </small>
+                    </div>
+                </div>
+
+                <div class="reg-actions">
+                    <div class="login-redirect">
+                        Already registered? <a href="{{ url_for('auth.login') }}">Sign In</a>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: OTP Verification Step -->
+            <div class="reg-step-pane" id="step2">
+                <div class="step-header">
+                    <h2>Verify Your Email</h2>
+                    <p>We've sent a 6-digit verification code to your official email address.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label class="required-field"><i class="fas fa-key"></i> Enter OTP Code</label>
+                        <input type="text" id="inputOTP" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric">
+                    </div>
+                </div>
+
+                <div id="otpMessage" class="form-help" style="text-align: center; margin-top: 1rem; font-weight: 700; font-size: 0.9rem;"></div>
+
+                <div style="text-align: center; margin-top: 1.5rem; margin-bottom: 1.5rem;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="triggerSendOTP()">
+                        <i class="fas fa-rotate"></i> Resend OTP
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="performOTPVerification()" style="margin-left: 10px;">
+                        <i class="fas fa-shield-halved"></i> Verify OTP
+                    </button>
+                </div>
+
+                <div class="reg-actions">
+                    <button type="button" class="btn btn-outline" onclick="prevStep(1)">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btnNextToStep3" onclick="nextStep(3)" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Hostel Details & Allergies -->
+            <div class="reg-step-pane" id="step3">
+                <div class="step-header">
+                    <h2>Hostel & Health Details</h2>
+                    <p>Provide your roll number, course, and compulsory allergy information.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> Roll Number</label>
+                        <input type="text" name="roll_number" id="inputRoll" placeholder="e.g. CS2024001" oninput="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-graduation-cap"></i> Course</label>
+                        <input type="text" name="course" id="inputCourse" placeholder="e.g. B.Tech CSE" oninput="updatePreview()">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label><i class="fas fa-bed"></i> Room Number</label>
+                        <input type="text" name="room_number" id="inputRoom" placeholder="e.g. A-101" oninput="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-cake-candles"></i> Date of Birth</label>
+                        <input type="date" name="birth_date" id="inputBirthDate" oninput="updatePreview()">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-bed"></i> Room Type</label>
+                        <select name="room_type" id="inputRoomType" onchange="updatePreview()">
+                            <option value="">Select room type…</option>
+                            <option value="Single">Single</option>
+                            <option value="Double Sharing">Double Sharing</option>
+                            <option value="Double Sharing AC">Double Sharing AC</option>
+                            <option value="Triple Sharing">Triple Sharing</option>
+                            <option value="Triple Sharing AC">Triple Sharing AC</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> Year of Study</label>
+                        <select name="year" id="inputYear" onchange="updatePreview()">
+                            <option value="1">Year 1</option>
+                            <option value="2">Year 2</option>
+                            <option value="3">Year 3</option>
+                            <option value="4">Year 4</option>
+                            <option value="5">Year 5</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label class="required-field"><i class="fas fa-triangle-exclamation" style="color:#2563EB;"></i> Do you have any allergies?</label>
+                        <input type="text" name="allergies" id="inputAllergies" required placeholder="e.g. peanuts, dust, lactose (write 'None' if none)" oninput="updatePreview()">
+                        <div class="allergy-quick-chips">
+                            <span class="q-chip" onclick="selectAllergy('None')">None</span>
+                            <span class="q-chip" onclick="selectAllergy('Peanuts')">Peanuts</span>
+                            <span class="q-chip" onclick="selectAllergy('Lactose/Dairy')">Lactose/Dairy</span>
+                            <span class="q-chip" onclick="selectAllergy('Gluten')">Gluten</span>
+                            <span class="q-chip" onclick="selectAllergy('Dust')">Dust</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reg-actions">
+                    <button type="button" class="btn btn-outline" onclick="prevStep(2)">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep(4)">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Roommate Preferences Quiz -->
+            <div class="reg-step-pane" id="step4">
+                <div class="step-header">
+                    <h2>Roommate Matcher Quiz</h2>
+                    <p>Answer these mandatory personality preferences to help find compatible roommates.</p>
+                </div>
+
+                <!-- Q1: Sleep Schedule -->
+                <div class="preference-quiz-item">
+                    <label class="quiz-question-title"><i class="fas fa-moon"></i> 1. Sleep Schedule</label>
+                    <input type="hidden" name="q1" id="q1" value="2">
+                    <div class="quiz-options">
+                        <div class="quiz-opt-card selected" onclick="selectQuizOption('q1', 2, this)">
+                            <i class="fas fa-cloud-moon"></i>
+                            <span>Midnight</span>
+                            <small>10 PM - 12 AM</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q1', 1, this)">
+                            <i class="fas fa-sun"></i>
+                            <span>Early Sleeper</span>
+                            <small>Before 10 PM</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q1', 3, this)">
+                            <i class="fas fa-moon"></i>
+                            <span>Night Owl</span>
+                            <small>12 AM - 2 AM</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q1', 4, this)">
+                            <i class="fas fa-star"></i>
+                            <span>Very Late</span>
+                            <small>After 2 AM</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q2: Study Environment -->
+                <div class="preference-quiz-item">
+                    <label class="quiz-question-title"><i class="fas fa-book-open"></i> 2. Study Environment</label>
+                    <input type="hidden" name="q2" id="q2" value="2">
+                    <div class="quiz-options">
+                        <div class="quiz-opt-card selected" onclick="selectQuizOption('q2', 2, this)">
+                            <i class="fas fa-comment-slash"></i>
+                            <span>Mostly Quiet</span>
+                            <small>Minimal noise</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q2', 1, this)">
+                            <i class="fas fa-volume-xmark"></i>
+                            <span>Complete Silence</span>
+                            <small>Pin-drop quiet</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q2', 3, this)">
+                            <i class="fas fa-music"></i>
+                            <span>Music OK</span>
+                            <small>Low background</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q2', 4, this)">
+                            <i class="fas fa-volume-high"></i>
+                            <span>Lively</span>
+                            <small>Any noise level</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q3: Cleanliness Level -->
+                <div class="preference-quiz-item">
+                    <label class="quiz-question-title"><i class="fas fa-broom"></i> 3. Cleanliness Habits</label>
+                    <input type="hidden" name="q3" id="q3" value="2">
+                    <div class="quiz-options">
+                        <div class="quiz-opt-card selected" onclick="selectQuizOption('q3', 2, this)">
+                            <i class="fas fa-equals"></i>
+                            <span>Moderate</span>
+                            <small>Reasonably tidy</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q3', 1, this)">
+                            <i class="fas fa-couch"></i>
+                            <span>Relaxed</span>
+                            <small>Messy is fine</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q3', 3, this)">
+                            <i class="fas fa-broom"></i>
+                            <span>Tidy</span>
+                            <small>Usually clean</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q3', 4, this)">
+                            <i class="fas fa-sparkles"></i>
+                            <span>Very Neat</span>
+                            <small>Spotless room</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q4: Social Personality -->
+                <div class="preference-quiz-item">
+                    <label class="quiz-question-title"><i class="fas fa-users"></i> 4. Social Personality</label>
+                    <input type="hidden" name="q4" id="q4" value="2">
+                    <div class="quiz-options">
+                        <div class="quiz-opt-card selected" onclick="selectQuizOption('q4', 2, this)">
+                            <i class="fas fa-user"></i>
+                            <span>Introverted</span>
+                            <small>Keep to myself</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q4', 1, this)">
+                            <i class="fas fa-user-secret"></i>
+                            <span>Strong Introvert</span>
+                            <small>Need lots of alone time</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q4', 3, this)">
+                            <i class="fas fa-user-friends"></i>
+                            <span>Extroverted</span>
+                            <small>Enjoy socialising</small>
+                        </div>
+                        <div class="quiz-opt-card" onclick="selectQuizOption('q4', 4, this)">
+                            <i class="fas fa-people-group"></i>
+                            <span>Highly Social</span>
+                            <small>The more the merrier</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reg-actions">
+                    <button type="button" class="btn btn-outline" onclick="prevStep(3)">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-submit-success">
+                        <i class="fas fa-check-circle"></i> Register Profile
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Navigate between wizard steps
+let currentStep = 1;
+let isOtpVerified = false;
+
+function goToStep(step) {
+    // Basic validation before going forward
+    if (step > currentStep) {
+        if (currentStep === 1) {
+            if (!validateStep1()) return;
+            triggerSendOTP();
+            return;
+        }
+        if (currentStep === 2) {
+            if (!isOtpVerified) {
+                alert("Please verify your official email via OTP first before proceeding.");
+                return;
+            }
+        }
+        if (currentStep === 3 && !validateStep3()) return;
+    }
+    
+    document.querySelectorAll('.reg-step-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.step-indicator').forEach(i => i.classList.remove('active', 'done'));
+    
+    // Update Indicators
+    for (let i = 1; i <= 4; i++) {
+        const ind = document.getElementById('stepIndicator' + i);
+        const line = document.getElementById('stepLine' + i);
+        if (i < step) {
+            ind.classList.add('done');
+            if (line) line.classList.add('done');
+        } else if (i === step) {
+            ind.classList.add('active');
+            if (line) line.classList.remove('done');
+        } else {
+            if (line) line.classList.remove('done');
+        }
+    }
+    
+    document.getElementById('step' + step).classList.add('active');
+    currentStep = step;
+}
+
+function nextStep(step) {
+    goToStep(step);
+}
+
+function prevStep(step) {
+    goToStep(step);
+}
+
+// Client-side validations
+function validateStep1() {
+    const fullName = document.getElementById('inputFullName').value.trim();
+    const email = document.getElementById('inputEmail').value.trim();
+    const password = document.getElementById('inputPassword').value;
+    const fileUploaded = document.getElementById('profile_pic').files.length > 0;
+    
+    if (!fullName) {
+        alert("Please enter your Full Name.");
+        return false;
+    }
+    if (!email) {
+        alert("Please enter your SRM student email handle.");
+        return false;
+    }
+    if (email.includes('@') && !email.endsWith('@srmist.edu.in')) {
+        alert("Please use your official @srmist.edu.in email handle.");
+        return false;
+    }
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters long.");
+        return false;
+    }
+    if (!fileUploaded) {
+        alert("A profile picture is compulsory for registration.");
+        return false;
+    }
+    return true;
+}
+
+function validateStep3() {
+    const allergies = document.getElementById('inputAllergies').value.trim();
+    if (!allergies) {
+        alert("Providing allergy details is compulsory. Type 'None' if you don't have any.");
+        return false;
+    }
+    return true;
+}
+
+function validateFinalForm() {
+    if (!validateStep1()) return false;
+    if (!isOtpVerified) {
+        alert("Please verify your official email via OTP first.");
+        return false;
+    }
+    if (!validateStep3()) return false;
+    return true;
+}
+
+// Trigger sending OTP via AJAX
+function triggerSendOTP() {
+    const email = document.getElementById('inputEmail').value.trim();
+    if (!email) {
+        alert("Please enter your official email address first.");
+        return;
+    }
+
+    const msgEl = document.getElementById('otpMessage');
+    msgEl.style.color = "var(--text)";
+    msgEl.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: var(--primary);"></i> Sending OTP to your email...';
+    
+    fetch('/auth/send_otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            msgEl.style.color = "var(--green-text)";
+            msgEl.innerHTML = '<i class="fas fa-circle-check"></i> OTP sent successfully. Check your email.';
+
+            // Advance to Verify step
+            document.querySelectorAll('.reg-step-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.step-indicator').forEach(i => i.classList.remove('active', 'done'));
+
+            for (let i = 1; i <= 4; i++) {
+                const ind = document.getElementById('stepIndicator' + i);
+                const line = document.getElementById('stepLine' + i);
+                if (i < 2) {
+                    ind.classList.add('done');
+                    if (line) line.classList.add('done');
+                } else if (i === 2) {
+                    ind.classList.add('active');
+                    if (line) line.classList.remove('done');
+                } else {
+                    if (line) line.classList.remove('done');
+                }
+            }
+            document.getElementById('step2').classList.add('active');
+            currentStep = 2;
+        } else {
+            alert('Could not send OTP: ' + data.message);
+            msgEl.style.color = "var(--red-text)";
+            msgEl.innerHTML = '<i class="fas fa-circle-xmark"></i> Error sending OTP: ' + data.message;
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert('Connection error. Is the server running?');
+        msgEl.style.color = "var(--red-text)";
+        msgEl.innerHTML = '<i class="fas fa-circle-xmark"></i> Connection error.';
+    });
+}
+
+// Verify OTP via AJAX
+function performOTPVerification() {
+    const otpInput = document.getElementById('inputOTP');
+    const otp = otpInput.value.trim();
+    if (!otp || otp.length !== 6) {
+        alert("Please enter a 6-digit OTP.");
+        return;
+    }
+    
+    const msgEl = document.getElementById('otpMessage');
+    msgEl.style.color = "var(--text)";
+    msgEl.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: var(--primary);"></i> Verifying OTP...';
+    
+    fetch('/auth/verify_otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otp: otp })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            isOtpVerified = true;
+            msgEl.style.color = "var(--green-text)";
+            msgEl.innerHTML = '<i class="fas fa-circle-check"></i> OTP verified successfully! You can now proceed.';
+            
+            // Enable next button
+            const nextBtn = document.getElementById('btnNextToStep3');
+            nextBtn.removeAttribute('disabled');
+            nextBtn.style.opacity = "1";
+            nextBtn.style.cursor = "pointer";
+        } else {
+            msgEl.style.color = "var(--red-text)";
+            msgEl.innerHTML = '<i class="fas fa-circle-xmark"></i> ' + data.message;
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        msgEl.style.color = "var(--red-text)";
+        msgEl.innerHTML = '<i class="fas fa-circle-xmark"></i> Connection error.';
+    });
+}
+
+// Quick Allergy chip selector
+function selectAllergy(allergen) {
+    const allergyInput = document.getElementById('inputAllergies');
+    if (allergen === 'None') {
+        allergyInput.value = 'None';
+    } else {
+        let current = allergyInput.value.trim();
+        if (current === 'None' || !current) {
+            allergyInput.value = allergen;
+        } else {
+            let list = current.split(',').map(s => s.trim());
+            if (!list.includes(allergen)) {
+                list.push(allergen);
+            }
+            allergyInput.value = list.join(', ');
+        }
+    }
+    updatePreview();
+}
+
+// Quiz Option Selector
+function selectQuizOption(questionKey, val, cardEl) {
+    const cards = cardEl.closest('.quiz-options').querySelectorAll('.quiz-opt-card');
+    cards.forEach(c => c.classList.remove('selected'));
+    cardEl.classList.add('selected');
+    document.getElementById(questionKey).value = val;
+}
+
+// Handle Image Upload and Update Live Preview Card
+function handleImageUpload(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewAvatar').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+        
+        // Update label placeholder text
+        const uploadPlaceholder = input.nextElementSibling;
+        uploadPlaceholder.querySelector('span').textContent = input.files[0].name;
+        uploadPlaceholder.querySelector('i').className = "fas fa-check-circle";
+        uploadPlaceholder.querySelector('i').style.color = "#2563EB";
+    }
+}
+
+// Dynamic Live Preview updates
+function updatePreview() {
+    const fullName = document.getElementById('inputFullName').value.trim() || "Sanjana Gupta";
+    let email = document.getElementById('inputEmail').value.trim().toLowerCase();
+    if (email && !email.includes('@')) {
+        email += "@srmist.edu.in";
+    }
+    email = email || "sg5797@srmist.edu.in";
+    
+    const roll = document.getElementById('inputRoll').value.trim() || "-";
+    const course = document.getElementById('inputCourse').value.trim() || "-";
+    const yearVal = document.getElementById('inputYear').value;
+    const room = document.getElementById('inputRoom').value.trim() || "-";
+    const allergies = document.getElementById('inputAllergies').value.trim() || "Not specified";
+    
+    document.getElementById('previewName').textContent = fullName;
+    document.getElementById('previewEmail').textContent = email;
+    document.getElementById('previewRoll').textContent = roll;
+    document.getElementById('previewCourse').textContent = course;
+    document.getElementById('previewYear').textContent = "Year " + yearVal;
+    document.getElementById('previewRoom').textContent = room;
+    
+    const previewAllergies = document.getElementById('previewAllergies');
+    previewAllergies.textContent = allergies;
+    if (allergies.toLowerCase() === 'none') {
+        previewAllergies.className = "allergy-tag none-tag";
+    } else {
+        previewAllergies.className = "allergy-tag";
+    }
+}
+</script>
+
+<style>
+/* ── Reset default layout to fit within window ── */
+body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #FFFCFC;
+}
+
+/* Do NOT constrain the landing wrapper height — the register form is tall
+   and must be reachable by vertical scrolling on mobile. */
+.landing {
+    padding: 0 !important;
+    min-height: 100vh;
+    display: block !important;  /* override any flex centering that clips content */
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.landing-nav {
+    display: none !important; /* Hide landing nav to maximize screen space */
+}
+
+/* Base split screen container */
+.reg-container {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    width: 100%;
+    min-height: 100vh;
+    background: #f8fbff;
+}
+
+/* Left panel style */
+.reg-sidebar {
+    background: #eff6ff;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1.75rem;
+    color: #0f172a;
+    border-right: 1px solid #dbeafe;
+}
+
+.reg-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.reg-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: #2563EB;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.reg-brand-text {
+    font-size: 1.125rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+}
+
+.reg-hero-msg h2 {
+    font-size: 1.625rem;
+    font-weight: 750;
+    line-height: 1.25;
+    color: #0f172a;
+    margin-bottom: 0.75rem;
+}
+
+.reg-hero-msg p {
+    font-size: 0.875rem;
+    color: #475569;
+    line-height: 1.6;
+}
+
+/* Premium Live Student Card Mockup */
+.student-live-card {
+    background: #ffffff;
+    border: 1px solid #dbeafe;
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.live-card-badge {
+    width: fit-content;
+    margin: 0 0 0.75rem auto;
+    font-size: 0.65rem;
+    font-weight: 800;
+    background: rgba(37, 99, 235, 0.15);
+    color: #2563EB;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+}
+
+.live-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.live-avatar-wrap {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #2563EB;
+    background: #334155;
+    flex-shrink: 0;
+}
+
+.live-avatar-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.live-header-meta h3 {
+    font-size: 0.95rem;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.live-header-meta p {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.live-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 0.5rem;
+}
+
+.live-info-grid div {
+    display: flex;
+    flex-direction: column;
+}
+
+.live-info-grid small {
+    font-size: 0.65rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.live-info-grid span {
+    font-size: 0.85rem;
+    color: #334155;
+    font-weight: 600;
+}
+
+.live-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 1rem 0;
+}
+
+.live-allergies {
+    font-size: 0.8rem;
+    color: #475569;
+}
+
+.allergy-tag {
+    display: inline-block;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-left: 0.25rem;
+}
+
+.allergy-tag.none-tag {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+}
+
+/* Right Panel wrapper */
+.reg-form-wrap {
+    padding: 3rem clamp(1.5rem, 5vw, 5rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: #ffffff;
+    min-height: 100vh;
+}
+
+.reg-wizard-form,
+.reg-stepper {
+    width: min(100%, 680px);
+}
+
+.reg-wizard-form {
+    padding: 2rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+/* Stepper */
+.reg-stepper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.step-indicator.active {
+    opacity: 1;
+}
+
+.step-indicator.done {
+    opacity: 1;
+}
+
+.step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.step-indicator.active .step-num {
+    background: #2563EB;
+    color: #ffffff;
+}
+
+.step-indicator.done .step-num {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.step-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.step-line {
+    flex: 1;
+    height: 2px;
+    background: #e2e8f0;
+    margin: 0 1rem;
+}
+
+.step-line.done {
+    background: #2563eb;
+}
+
+/* Form Panes */
+.reg-step-pane {
+    display: none;
+    flex-direction: column;
+    gap: 1.125rem;
+    width: 100%;
+    animation: fadeInSlide 0.25s ease-out;
+}
+
+.reg-step-pane.active {
+    display: flex;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.step-header h2 {
+    font-size: 1.5rem;
+    font-weight: 750;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.375rem;
+}
+
+.step-header p {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+/* Inputs & Form Fields */
+.form-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.form-group.flex-2 {
+    flex: 2;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.required-field::after {
+    content: " *";
+    color: #2563EB;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    color: #1e293b;
+    background: #ffffff;
+    transition: all 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-help {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+
+/* Custom domain suffix input wrapper */
+.srm-email-input-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.srm-email-input-wrapper:focus-within {
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.srm-email-input-wrapper input {
+    border: none !important;
+    box-shadow: none !important;
+    padding-right: 0.25rem;
+}
+
+.srm-domain-addon {
+    padding: 0 0.9rem;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-left: 1.5px solid #e2e8f0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+/* Custom profile pic upload button */
+.custom-file-upload {
+    position: relative;
+    width: 100%;
+    height: 48px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #f8fafc;
+    transition: all 0.2s;
+}
+
+.custom-file-upload:hover {
+    border-color: #2563EB;
+    background: #fff;
+}
+
+.custom-file-upload input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.upload-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 600;
+    z-index: 1;
+}
+
+.upload-placeholder i {
+    font-size: 1.1rem;
+    color: #94a3b8;
+}
+
+/* Quick chips for allergies */
+.allergy-quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+}
+
+.q-chip {
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 10px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid #e2e8f0;
+}
+
+.q-chip:hover {
+    background: #2563EB;
+    color: #ffffff;
+    border-color: #2563EB;
+}
+
+/* Roommate quiz options layout */
+.preference-quiz-item {
+    margin-bottom: 0.5rem;
+}
+
+.quiz-question-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.4rem;
+    display: block;
+}
+
+.quiz-options {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.quiz-opt-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 78px;
+}
+
+.quiz-opt-card i {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+}
+
+.quiz-opt-card span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: block;
+    line-height: 1.2;
+}
+
+.quiz-opt-card small {
+    font-size: 0.6rem;
+    color: #64748b;
+    line-height: 1.1;
+    margin-top: 2px;
+}
+
+.quiz-opt-card:hover {
+    border-color: #2563EB;
+    background: rgba(37, 99, 235, 0.02);
+}
+
+.quiz-opt-card.selected {
+    border-color: #2563EB;
+    background: rgba(37, 99, 235, 0.06);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.05);
+}
+
+.quiz-opt-card.selected i {
+    color: #2563EB;
+}
+
+/* Actions block */
+.reg-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1.25rem;
+}
+
+#inputOTP {
+    min-height: 56px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+}
+
+#otpMessage {
+    min-height: 20px;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.reg-form-wrap .btn-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    box-shadow: none;
+}
+
+.reg-form-wrap .btn-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+.login-redirect {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.login-redirect a {
+    font-weight: 700;
+    color: #2563EB;
+}
+
+.btn-submit-success {
+    background: #22c55e !important;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25) !important;
+}
+
+.btn-submit-success:hover {
+    background: #16a34a !important;
+}
+
+/* Responsive adjustment for screens smaller than 900px */
+@media (max-width: 900px) {
+    .reg-container {
+        grid-template-columns: 1fr;
+        min-height: auto;   /* allow the page to grow as needed */
+    }
+    .reg-sidebar {
+        display: none;
+    }
+    .reg-form-wrap {
+        padding: 2rem 1.5rem;
+        min-height: auto;
+        justify-content: flex-start;
+    }
+    .reg-wizard-form {
+        width: 100%;
+    }
+    .reg-wizard-form,
+    .reg-stepper {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* Small tablet */
+@media (max-width: 640px) {
+    .reg-form-wrap {
+        padding: 1.5rem 1rem;
+    }
+    .quiz-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .form-row {
+        flex-direction: column;
+    }
+    .step-text {
+        display: none;   /* hide labels, show only step numbers on tiny screens */
+    }
+    .step-line {
+        margin: 0 0.4rem;
+    }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    .reg-form-wrap {
+        padding: 1.25rem 0.75rem;
+    }
+    .reg-wizard-form {
+        padding: 1.25rem;
+        border-radius: 12px;
+    }
+    .quiz-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+    }
+    .quiz-opt-card {
+        height: auto;
+        min-height: 68px;
+        padding: 0.4rem 0.25rem;
+    }
+    .reg-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .reg-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .reg-actions .login-redirect {
+        text-align: center;
+        width: 100%;
+    }
+    .srm-domain-addon {
+        font-size: 0.75rem;
+        padding: 0 0.5rem;
+    }
+    /* Allergy chips: wrap naturally */
+    .allergy-quick-chips {
+        gap: 0.3rem;
+    }
+    .q-chip {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+    }
+}
+</style>
+
+{% endblock %}
